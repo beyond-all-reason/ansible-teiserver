@@ -8,12 +8,33 @@
 - name: Install packages
   ansible.builtin.package:
     name:
+      - build-essential
       - curl
       - dnsutils
+      - geoip-bin
+      - git
+      - grc
       - htop
       - nano
+      - nginx
+      - postgresql-15
+      - tcpdump
       - tmux
       - ufw
+      - vim
     state: present
 - name: Set up firewall
   ansible.builtin.include_tasks: firewall.yml
+- name: Add deploy user
+  ansible.builtin.user:
+    name: deploy
+    shell: /bin/bash
+    groups: sudo
+    append: true
+    password: '!'  # Disable password login
+- name: Don't require password for sudo for deploy user
+  ansible.builtin.copy:
+    content: |
+      deploy ALL=(ALL) NOPASSWD:ALL
+    dest: /etc/sudoers.d/90-deploy-user
+    mode: '0440'
