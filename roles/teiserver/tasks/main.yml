@@ -1,0 +1,19 @@
+---
+- name: Set timezone to UTC
+  community.general.timezone:
+    name: Etc/UTC
+- name: Set hostname
+  ansible.builtin.hostname:
+    name: "teiserver-{{ inventory_hostname }}"
+- name: Install packages
+  ansible.builtin.package:
+    name:
+      - curl
+      - dnsutils
+      - htop
+      - nano
+      - tmux
+      - ufw
+    state: present
+- name: Set up firewall
+  ansible.builtin.include_tasks: firewall.yml

@@ -1,0 +1,29 @@
+---
+- name: Allow and rate limit SSH
+  community.general.ufw:
+    rule: limit
+    name: OpenSSH
+- name: Allow HTTP
+  community.general.ufw:
+    rule: allow
+    name: WWW Full
+- name: Set up teiserver application profile
+  ansible.builtin.copy:
+    content: |
+      [teiserver]
+      title=teiserver
+      description=ports for the lobby protocol
+      ports=8200,8201,8202/tcp
+    dest: /etc/ufw/applications.d/teiserver
+    mode: '0644'
+- name: Allow teiserver
+  community.general.ufw:
+    rule: allow
+    name: teiserver
+- name: Default deny for incoming traffic
+  community.general.ufw:
+    default: deny
+    direction: incoming
+- name: Enable firewall
+  community.general.ufw:
+    state: enabled

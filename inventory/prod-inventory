@@ -1,0 +1,4 @@
+main ansible_host=0.0.0.0
+
+[prod]
+main

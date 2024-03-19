@@ -1,0 +1,6 @@
+---
+- name: Set up host
+  hosts: all
+  roles:
+    - role: teiserver
+      become: true
