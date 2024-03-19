@@ -1,4 +1,5 @@
 config:
+  security.nesting: true
   cloud-init.user-data: |
     #cloud-config
     package_upgrade: true

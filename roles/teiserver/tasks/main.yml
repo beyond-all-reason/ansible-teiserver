@@ -17,6 +17,8 @@
       - htop
       - nano
       - nginx
+      - podman
+      - podman-docker
       - postgresql-15
       - tcpdump
       - tmux
@@ -38,3 +40,9 @@
       deploy ALL=(ALL) NOPASSWD:ALL
     dest: /etc/sudoers.d/90-deploy-user
     mode: '0440'
+- name: Make sure podman resolves docker.io correctly wihout prefix
+  ansible.builtin.lineinfile:
+    path: /etc/containers/registries.conf
+    regexp: '^unqualified-search-registries '
+    insertafter: '^# unqualified-search-registries'
+    line: "unqualified-search-registries = ['docker.io']"
