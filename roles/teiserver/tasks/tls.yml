@@ -1,0 +1,67 @@
+---
+- name: Create acme conf directory
+  ansible.builtin.file:
+    path: '/var/lib/acme/conf'
+    state: directory
+- name: Write acme responses
+  ansible.builtin.template:
+    src: acmetool-responses
+    dest: /var/lib/acme/conf/responses
+  register: acme_responses
+- name: Write acme perm file
+  ansible.builtin.copy:
+    content: |
+      # path-pattern       file-mode dir-mode uid  gid
+      keys                 0640      0750     root ssl-cert
+    dest: /var/lib/acme/conf/perm
+- name: Run acmetool quickstart
+  ansible.builtin.command: acmetool quickstart --batch
+  register: acmetool_quickstart
+  when: acme_responses.changed
+- name: Configure needed certificate
+  ansible.builtin.copy:
+    content: |
+      satisfy:
+        names:
+          - {{ domain_name }}
+    dest: /var/lib/acme/desired/teiserver
+  register: desired_certificates
+- name: Request certificate
+  ansible.builtin.command: acmetool --xlog.stderr --batch reconcile
+  register: acmetool_want
+  when: desired_certificates.changed
+- name: Copy acme timer systemd units files
+  ansible.builtin.copy:
+    src: '{{ item }}'
+    dest: '/etc/systemd/system/{{ item }}'
+  loop:
+    - acme.service
+    - acme.timer
+  register: systemd_units
+- name: Reload systemd daemon if needed
+  ansible.builtin.systemd:
+    daemon_reload: true
+  when: systemd_units.changed
+- name: Enable systemd timer
+  ansible.builtin.systemd:
+    name: acme.timer
+    state: started
+    enabled: true
+- name: Link to acme certificates
+  ansible.builtin.file:
+    src: '{{ item.from }}'
+    dest: '{{ item.to }}'
+    state: link
+  loop:
+    - from: '/var/lib/acme/live/{{ domain_name }}/cert'
+      to: /etc/ssl/certs/teiserver.crt
+    - from: '/var/lib/acme/live/{{ domain_name }}/fullchain'
+      to: /etc/ssl/certs/teiserver_full.crt
+    - from: '/var/lib/acme/live/{{ domain_name }}/privkey'
+      to: /etc/ssl/private/teiserver.key
+  register: changed_certificates
+- name: Reload nginx if certificates changed
+  ansible.builtin.systemd:
+    name: nginx.service
+    state: reloaded
+  when: changed_certificates.changed

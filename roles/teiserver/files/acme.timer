@@ -1,0 +1,11 @@
+[Unit]
+Description=Update TLS certificates periodically
+After=network-online.target
+
+[Timer]
+OnCalendar=*-*-* 03:48:00
+Unit=acme.service
+Persistent=True
+
+[Install]
+WantedBy=timers.target

@@ -1,2 +1,6 @@
 ---
-domain: teiserver.local
+domain_name: teiserver.local
+acquire_tls_certificate: false
+database_name: teiserver_prod
+database_user: teiserver_prod
+database_password: 123456

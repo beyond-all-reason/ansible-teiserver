@@ -1,0 +1,39 @@
+---
+- name: Check if certificate linked
+  ansible.builtin.stat:
+    path: /etc/ssl/private/teiserver.key
+  register: cert
+- name: Link self signed certificates
+  ansible.builtin.file:
+    src: '{{ item.from }}'
+    dest: '{{ item.to }}'
+    state: link
+  loop:
+    - from: /etc/ssl/certs/ssl-cert-snakeoil.pem
+      to: /etc/ssl/certs/teiserver.crt
+    - from: /etc/ssl/certs/ssl-cert-snakeoil.pem
+      to: /etc/ssl/certs/teiserver_full.crt
+    - from: /etc/ssl/private/ssl-cert-snakeoil.key
+      to: /etc/ssl/private/teiserver.key
+  # Only set if no certificate linked is linked at the moment to make sure the acme certificate will stick.
+  when: not cert.stat.exists
+
+- name: Remove default site
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+- name: Create site configuration
+  ansible.builtin.template:
+    src: teiserver.conf.j2
+    dest: /etc/nginx/sites-available/teiserver
+  register: site
+- name: Enable site
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/teiserver
+    dest: /etc/nginx/sites-enabled/teiserver
+    state: link
+- name: Reload nginx
+  ansible.builtin.systemd:
+    name: nginx.service
+    state: reloaded
+  when: site.changed

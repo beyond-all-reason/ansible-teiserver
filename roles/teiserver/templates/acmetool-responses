@@ -1,0 +1,8 @@
+# Note that email is more or less permanent, changing it and rerunning
+# acmetool won't update registration with the ACME provider
+"acme-enter-email": "{{ acme_email }}"
+"acmetool-quickstart-choose-server": "{{ acme_server }}"
+"acme-agreement:{{ acme_agreement_url }}": true
+"acmetool-quickstart-choose-method": webroot
+"acmetool-quickstart-webroot-path": "/var/www/acme-challenge/"
+"acmetool-quickstart-install-cronjob": false

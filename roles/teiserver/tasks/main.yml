@@ -8,6 +8,8 @@
 - name: Install packages
   ansible.builtin.package:
     name:
+      - acl  # for ansible become
+      - acmetool
       - build-essential
       - curl
       - dnsutils
@@ -20,6 +22,7 @@
       - podman
       - podman-docker
       - postgresql-15
+      - ssl-cert  # self-signed cert for testing
       - tcpdump
       - tmux
       - ufw
@@ -31,7 +34,9 @@
   ansible.builtin.user:
     name: deploy
     shell: /bin/bash
-    groups: sudo
+    groups:
+      - sudo
+      - ssl-cert
     append: true
     password: '!'  # Disable password login
 - name: Don't require password for sudo for deploy user
@@ -46,3 +51,8 @@
     regexp: '^unqualified-search-registries '
     insertafter: '^# unqualified-search-registries'
     line: "unqualified-search-registries = ['docker.io']"
+- name: Set up http server
+  ansible.builtin.include_tasks: http.yml
+- name: Get proper TLS certificate
+  ansible.builtin.include_tasks: http.yml
+  when: acquire_tls_certificate

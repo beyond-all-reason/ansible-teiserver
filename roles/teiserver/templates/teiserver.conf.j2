@@ -1,0 +1,21 @@
+server {
+	listen 443 ssl http2;
+	listen [::]:443 ssl http2;
+	listen 80;
+	listen [::]:80;
+
+	server_name {{ domain_name }};
+
+	ssl_certificate /etc/ssl/certs/teiserver.crt;
+	ssl_certificate_key /etc/ssl/private/teiserver.key;
+	ssl_protocols TLSv1.2 TLSv1.3;
+
+	location ^~ /.well-known/acme-challenge/ {
+		alias /var/www/acme-challenge/;
+	}
+
+	location / {
+		add_header Content-Type text/plain;
+		return 200 'ok';
+	}
+}
