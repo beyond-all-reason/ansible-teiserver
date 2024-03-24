@@ -1,0 +1,49 @@
+---
+- name: Create postgres database
+  community.postgresql.postgresql_db:
+    name: '{{ database_name }}'
+    encoding: UTF-8
+- name: Create postgres user
+  community.postgresql.postgresql_user:
+    name: '{{ database_user }}'
+    password: '{{ database_password }}'
+    role_attr_flags: SUPERUSER
+- name: Grant privileges
+  community.postgresql.postgresql_privs:
+    type: database
+    database: '{{ database_name }}'
+    roles: '{{ database_user }}'
+    privs: ALL
+- name: Custom HBA rules
+  community.postgresql.postgresql_pg_hba:
+    dest: /etc/postgresql/15/main/pg_hba.conf
+    rules:
+      - contype: local
+        databases: '{{ database_name }}'
+        users: '{{ database_user }}'
+        method: trust
+- name: Tune Postgresql configuration
+  community.postgresql.postgresql_set:
+    name: '{{ item.name }}'
+    value: '{{ item.value }}'
+  loop:
+    - name: shared_preload_libraries
+      value: pg_stat_statements
+    - name: track_activity_query_size
+      value: '2kB'  # For some reason 2048 showed constantly as diff in ansible module
+    - name: pg_stat_statements.track
+      value: 'all'
+    - name: log_min_duration_statement
+      value: '5s'
+  register: pstune
+- name: Restart postgresql
+  ansible.builtin.systemd:
+    name: postgresql@15-main.service
+    state: restarted
+  become_user: root
+  when: pstune.results | selectattr('changed') | map(attribute='restart_required') is any
+  tags: restart-postgresql
+- name: Enabled pg_stat_statements extension
+  community.postgresql.postgresql_ext:
+    name: pg_stat_statements
+    db: '{{ database_name }}'

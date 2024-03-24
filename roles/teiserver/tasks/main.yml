@@ -22,6 +22,7 @@
       - podman
       - podman-docker
       - postgresql-15
+      - python3-psycopg2  # for ansible postgresql
       - ssl-cert  # self-signed cert for testing
       - tcpdump
       - tmux
@@ -56,3 +57,8 @@
 - name: Get proper TLS certificate
   ansible.builtin.include_tasks: http.yml
   when: acquire_tls_certificate
+- name: Configure database
+  ansible.builtin.include_tasks: database.yml
+  args:
+    apply:
+      become_user: postgres
