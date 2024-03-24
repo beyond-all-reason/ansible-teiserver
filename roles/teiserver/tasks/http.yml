@@ -22,6 +22,21 @@
   ansible.builtin.file:
     path: /etc/nginx/sites-enabled/default
     state: absent
+- name: Copy dhparams
+  ansible.builtin.copy:
+    src: ffdhe2048.txt
+    dest: /etc/nginx/dhparam.pem
+    mode: '0644'
+- name: Set HTTPS redirect
+  ansible.builtin.copy:
+    src: https-redirect.conf
+    dest: /etc/nginx/sites-available/https-redirect
+    mode: '0644'
+- name: Enable HTTPS redirect
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/https-redirect
+    dest: /etc/nginx/sites-enabled/https-redirect
+    state: link
 - name: Create site configuration
   ansible.builtin.template:
     src: teiserver.conf.j2
