@@ -25,7 +25,7 @@
 - name: Copy dhparams
   ansible.builtin.copy:
     src: ffdhe2048.txt
-    dest: /etc/nginx/dhparam.pem
+    dest: /etc/ssl/dhparam.pem
     mode: '0644'
 - name: Set HTTPS redirect
   ansible.builtin.copy:

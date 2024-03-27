@@ -62,3 +62,5 @@
   args:
     apply:
       become_user: postgres
+- name: Configure teiserver
+  ansible.builtin.include_tasks: teiserver.yml

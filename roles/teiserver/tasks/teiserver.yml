@@ -1,0 +1,16 @@
+---
+- block:
+  - name: Ensure teiserver is cloned
+    ansible.builtin.git:
+      repo: 'https://github.com/beyond-all-reason/teiserver.git'
+      dest: /home/deploy/teiserver-repo
+      update: no
+  - name: Write prod secrets file
+    ansible.builtin.template:
+      src: prod.secret.exs.j2
+      dest: /home/deploy/teiserver-repo/config/prod.secret.exs
+  - name: Install docker build script
+    ansible.builtin.template:
+      src: teiserver.Dockerfile.j2
+      dest: /home/deploy/teiserver.Dockerfile
+  become_user: deploy
