@@ -18,37 +18,28 @@
   # Only set if no certificate linked is linked at the moment to make sure the acme certificate will stick.
   when: not cert.stat.exists
 
-- name: Remove default site
+- name: Create teiserver www root
   ansible.builtin.file:
-    path: /etc/nginx/sites-enabled/default
-    state: absent
+    path: /var/www/teiserver
+    mode: '0755'
+    state: directory
+- name: Copy favicon
+  ansible.builtin.copy:
+    src: favicon.ico
+    dest: /var/www/teiserver/favicon.ico
+    mode: '0644'
 - name: Copy dhparams
   ansible.builtin.copy:
     src: ffdhe2048.txt
     dest: /etc/ssl/dhparam.pem
     mode: '0644'
-- name: Set HTTPS redirect
-  ansible.builtin.copy:
-    src: https-redirect.conf
-    dest: /etc/nginx/sites-available/https-redirect
-    mode: '0644'
-- name: Enable HTTPS redirect
-  ansible.builtin.file:
-    src: /etc/nginx/sites-available/https-redirect
-    dest: /etc/nginx/sites-enabled/https-redirect
-    state: link
-- name: Create site configuration
+- name: Write nginx config
   ansible.builtin.template:
-    src: teiserver.conf.j2
-    dest: /etc/nginx/sites-available/teiserver
-  register: site
-- name: Enable site
-  ansible.builtin.file:
-    src: /etc/nginx/sites-available/teiserver
-    dest: /etc/nginx/sites-enabled/teiserver
-    state: link
+    src: nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+  register: nginx_config
 - name: Reload nginx
   ansible.builtin.systemd:
     name: nginx.service
     state: reloaded
-  when: site.changed
+  when: nginx_config.changed

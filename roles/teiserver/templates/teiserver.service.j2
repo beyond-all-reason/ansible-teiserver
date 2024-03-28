@@ -1,0 +1,14 @@
+[Unit]
+Description=Teiserver Elixir Application
+After=network.target
+After=postgresql@15-main.service
+
+[Service]
+User=teiserver
+ExecStart=/opt/teiserver/live/bin/teiserver start
+Restart=on-failure
+LimitNOFILE=65536
+KillMode=mixed
+
+[Install]
+WantedBy=multi-user.target

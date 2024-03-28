@@ -37,7 +37,6 @@
     shell: /bin/bash
     groups:
       - sudo
-      - ssl-cert
     append: true
     password: '!'  # Disable password login
 - name: Don't require password for sudo for deploy user

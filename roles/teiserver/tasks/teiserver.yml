@@ -14,3 +14,36 @@
       src: teiserver.Dockerfile.j2
       dest: /home/deploy/teiserver.Dockerfile
   become_user: deploy
+- name: Add teiserver user
+  ansible.builtin.user:
+    name: teiserver
+    shell: /sbin/nologin
+    home: /var/lib/teiserver
+    groups:
+      - ssl-cert
+    append: true
+- name: Create teiserver installation directory
+  ansible.builtin.file:
+    path: /opt/teiserver
+    mode: '0755'
+    state: directory
+- name: Create teiserver logs directory
+  ansible.builtin.file:
+    path: /var/log/teiserver
+    owner: teiserver
+    group: teiserver
+    mode: '0755'
+    state: directory
+- name: Install teiserver service
+  ansible.builtin.template:
+    src: teiserver.service.j2
+    dest: /etc/systemd/system/teiserver.service
+  register: systemd_units
+- name: Reload systemd daemon
+  ansible.builtin.systemd:
+    daemon_reload: yes
+  when: systemd_units.changed
+- name: Enable teiserver service
+  ansible.builtin.systemd:
+    name: teiserver.service
+    enabled: yes
