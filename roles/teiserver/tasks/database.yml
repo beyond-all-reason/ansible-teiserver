@@ -22,13 +22,24 @@
         databases: '{{ database_name }}'
         users: '{{ database_user }}'
         method: trust
+- name: Enable pg_stat_statements module
+  # We have to do this one first, because without it the pg_stat_statements.track
+  # setting will not be available in the next step.
+  community.postgresql.postgresql_set:
+    name: shared_preload_libraries
+    value: pg_stat_statements
+  register: pg_shared_preload_libraries
+- name: Restart postgresql
+  ansible.builtin.systemd:
+    name: postgresql@15-main.service
+    state: restarted
+  when: pg_shared_preload_libraries.changed
+  become_user: root
 - name: Tune Postgresql configuration
   community.postgresql.postgresql_set:
     name: '{{ item.name }}'
     value: '{{ item.value }}'
   loop:
-    - name: shared_preload_libraries
-      value: pg_stat_statements
     - name: track_activity_query_size
       value: '2kB'  # For some reason 2048 showed constantly as diff in ansible module
     - name: pg_stat_statements.track
