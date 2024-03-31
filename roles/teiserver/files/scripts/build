@@ -1,0 +1,58 @@
+#!/bin/bash
+
+set -e -u -o pipefail
+
+if [[ $(id -u) != 0 ]]; then
+    gum style --faint "Elevating to run as root"
+    exec sudo "$0" "$@"
+fi
+
+MAIN_REPO="/home/deploy/teiserver-repo"
+
+REPO="$MAIN_REPO"
+
+REPO_COMMIT=$(git -C "$REPO" rev-parse HEAD)
+if output=$(git -C "$REPO" status --porcelain) && [ -z "$output" ]; then
+  REPO_DIRTY=false
+else
+  REPO_DIRTY=true
+fi
+
+IMAGE_ID_FILE="$(mktemp)"
+podman build --iidfile "$IMAGE_ID_FILE" -f /home/deploy/teiserver.Dockerfile "$REPO"
+IMAGE_ID=$(cat "$IMAGE_ID_FILE" | cut -d: -f2)
+rm "$IMAGE_ID_FILE"
+
+VER="${IMAGE_ID::10}"
+VER_DIR="/opt/teiserver/ver-$VER"
+
+DEPLOY_LOCK="/run/lock/teiserver-deploy.lock"
+(
+gum spin --title "Waiting for deploy lock held by $(cat $DEPLOY_LOCK)..." -- flock 200
+echo "$(logname):$$" > $DEPLOY_LOCK
+
+if [[ -d "$VER_DIR" ]]; then
+  gum style --bold "Same version $VER is already installed"
+else
+  rm -rf "$VER_DIR.tmp"
+  podman run --rm -v /opt:/opt "$IMAGE_ID" cp -r /app "$VER_DIR.tmp"
+  chown -R teiserver:teiserver "$VER_DIR.tmp"
+  cat <<EOF > "$VER_DIR.tmp/build-info.json"
+{
+  "repo": "$REPO",
+  "commit": "$REPO_COMMIT",
+  "dirty": "$REPO_DIRTY",
+  "actor": "$(logname)",
+  "time": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+  "image": "$IMAGE_ID"
+}
+EOF
+  mv "$VER_DIR.tmp" "$VER_DIR"
+  gum style --bold "Done building version $VER, build info:"
+  cat "$VER_DIR/build-info.json" | jq
+fi
+
+gum style --bold "Tagging the version $VER as latest"
+ln -sfT "ver-$VER" /opt/teiserver/latest
+
+) 200>>$DEPLOY_LOCK

@@ -1,0 +1,82 @@
+#!/bin/bash
+
+set -e -u -o pipefail
+
+if [[ $(id -u) != 0 ]]; then
+    gum style --faint "Elevating to run as root"
+    exec sudo "$0" "$@"
+fi
+
+cd /opt/teiserver
+
+function select_version {
+    # Build a map from build versions to tags (filesystem links)
+    declare -A tags
+    while read -r tag; do
+        version=$(basename $(readlink -f "$tag"))
+        tags["$version"]="$tag ${tags["$version"]-}"
+    done < <(find -maxdepth 1 -type l -printf "%P\n")
+
+    # Create an interactive table with list of versions
+    while read -r build_info; do
+        version=$(dirname "$build_info")
+        cat "$build_info" | jq \
+            --arg tags "${tags["$version"]-}" \
+            '. + {tags: $tags | rtrimstr(" ") }'
+    done \
+        < <(find -maxdepth 2 -regextype posix-extended -regex './ver-[a-f0-9]{10}/build-info.json' -printf "%P\n") \
+        | jq -s -r '.
+            | sort_by(.time) | reverse | .[]
+            | [
+                .image[0:10],
+                .time,
+                .actor,
+                .commit[0:7] + (if .dirty == "true" then "*" else "" end),
+                .repo,
+                .tags
+              ]
+            | @csv' \
+        | gum table -c version,time,actor,commit,repo,tags -w11,20,10,8,30,500 --height=15 \
+        | cut -d, -f1
+}
+
+DEPLOY_LOCK="/run/lock/teiserver-deploy.lock"
+(
+gum spin --title "Waiting for deploy lock held by $(cat $DEPLOY_LOCK)..." -- flock 200
+echo "$(logname):$$" > $DEPLOY_LOCK
+
+gum style --bold "Pick a version to deploy"
+
+selected=$(select_version)
+if [[ -z "$selected" ]]; then
+    gum style --bold "No version selected, exiting"
+    exit 0
+fi
+
+if [[ -L live && $(readlink live) == "ver-$selected" ]]; then
+    gum style --bold "Selected version $selected is already deployed"
+    exit 0
+fi
+
+gum style --bold "Selected version $selected, build info:"
+cat "ver-$selected/build-info.json" | jq
+
+if ! gum confirm "Are to sure to deploy version $selected?"; then
+    gum style --bold "Deployment cancelled"
+    exit 0
+fi
+
+gum style --bold "Deploying version $selected"
+
+# If we are reploying the rollback version, remove the rollback link
+if [[ -L rollback && $(readlink rollback) == "ver-$selected" ]]; then
+    rm rollback
+elif [[ -L live ]]; then
+    ln -sfT $(readlink live) rollback
+fi
+ln -sfT "ver-$selected" live
+
+gum spin --title "Restarting teiserver..." -- systemctl restart teiserver
+gum style --bold "Done"
+
+) 200>>$DEPLOY_LOCK

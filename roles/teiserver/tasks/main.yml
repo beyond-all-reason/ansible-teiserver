@@ -17,6 +17,8 @@
       - git
       - grc
       - htop
+      - jq
+      - man
       - nano
       - nginx
       - podman
@@ -27,8 +29,13 @@
       - tcpdump
       - tmux
       - ufw
+      - unzip
       - vim
+      - xz-utils
     state: present
+- name: Install gum
+  ansible.builtin.apt:
+    deb: https://github.com/charmbracelet/gum/releases/download/v0.13.0/gum_0.13.0_amd64.deb
 - name: Set up firewall
   ansible.builtin.include_tasks: firewall.yml
 - name: Add deploy user
@@ -51,6 +58,13 @@
     regexp: '^unqualified-search-registries '
     insertafter: '^# unqualified-search-registries'
     line: "unqualified-search-registries = ['docker.io']"
+- name: Allow git to run on any directory
+  ansible.builtin.copy:
+    content: |
+      [safe]
+        directory = *
+    dest: /etc/gitconfig
+    mode: '0644'
 - name: Set up http server
   ansible.builtin.include_tasks: http.yml
 - name: Get proper TLS certificate
