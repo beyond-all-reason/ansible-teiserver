@@ -26,7 +26,7 @@ mkdir -p "$TARGET_DIR/rel"
 cp "$PROD_DATA/vm.args.eex" "$TARGET_DIR/rel/vm.args.eex"
 
 # Fontawesome
-unzip -o -j "$PROD_DATA/fontawesome.zip" '*css/fontawesome.min.css' '*webfonts/*' -d "$FA_TMP"
-cp "$FA_TMP/fontawesome.min.css" "$TARGET_DIR/priv/static/css/fontawesome.css"
+unzip -o -j "$PROD_DATA/fontawesome.zip" '*css/all.min.css' '*webfonts/*' -d "$FA_TMP"
+cp "$FA_TMP/all.min.css" "$TARGET_DIR/priv/static/css/fontawesome.css"
 mkdir -p "$TARGET_DIR/priv/static/webfonts"
 cp "$FA_TMP"/*.ttf "$FA_TMP"/*.woff2 "$TARGET_DIR/priv/static/webfonts/"
