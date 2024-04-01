@@ -100,6 +100,8 @@ WORKDIR "/app"
 ENV MIX_ENV="prod"
 
 COPY --from=builder /build/_build/${MIX_ENV}/rel/teiserver  ./
+RUN mkdir src
+COPY --from=builder /build/config/prod.secret.exs src/prod.secret.exs
 
 ENTRYPOINT ["tini", "--"]
 CMD /app/bin/teiserver start
