@@ -7,6 +7,21 @@ if [[ $(id -u) != 0 ]]; then
     exec sudo "$0" "$@"
 fi
 
+# Flags parsing
+. /usr/local/lib/bash/shflags
+
+DEFINE_string 'version' '' 'Version to deploy, e.g. af99e8e1a9, latest' 'v'
+DEFINE_boolean 'skip_confirmation' false 'Skip deploy confirmation prompt' 'y'
+
+FLAGS_HELP="USAGE: $0 [flags]
+
+Deploy a new version of teiserver by selecting from the available builds.
+"
+FLAGS "$@" || exit $?
+eval set -- "${FLAGS_ARGV}"
+
+# Main script
+
 cd /opt/teiserver
 
 function select_version {
@@ -36,7 +51,7 @@ function select_version {
                 .tags
               ]
             | @csv' \
-        | gum table -c version,time,actor,commit,repo,tags -w11,20,10,8,30,500 --height=15 \
+        | gum table -c version,time,actor,commit,repo,tags -w11,20,10,8,30,500 --height=12 \
         | cut -d, -f1
 }
 
@@ -45,12 +60,24 @@ DEPLOY_LOCK="/run/lock/teiserver-deploy.lock"
 gum spin --title "Waiting for deploy lock held by $(cat $DEPLOY_LOCK)..." -- flock 200
 echo "$(logname):$$" > $DEPLOY_LOCK
 
-gum style --bold "Pick a version to deploy"
+if [[ -z "${FLAGS_version}" ]]; then
+    gum style --bold "Pick a version to deploy"
 
-selected=$(select_version)
-if [[ -z "$selected" ]]; then
-    gum style --bold "No version selected, exiting"
-    exit 0
+    selected=$(select_version)
+    if [[ -z "$selected" ]]; then
+        gum style --bold "No version selected, exiting"
+        exit 0
+    fi
+else
+    ver="${FLAGS_version}"
+    if [[ -d "ver-$ver" ]]; then
+        selected="$ver"
+    elif [[ -L "$ver" ]]; then
+        selected=$(readlink "$ver" | cut -d- -f2)
+    else
+        gum style --bold "Version $ver not found"
+        exit 1
+    fi
 fi
 
 if [[ -L live && $(readlink live) == "ver-$selected" ]]; then
@@ -61,7 +88,8 @@ fi
 gum style --bold "Selected version $selected, build info:"
 cat "ver-$selected/build-info.json" | jq
 
-if ! gum confirm "Are to sure to deploy version $selected?"; then
+if [[ "${FLAGS_skip_confirmation}" == "${FLAGS_FALSE}" ]] \
+  && ! gum confirm "Are to sure to deploy version $selected?"; then
     gum style --bold "Deployment cancelled"
     exit 0
 fi

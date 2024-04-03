@@ -4,9 +4,20 @@ set -e -u -o pipefail
 
 PROD_DATA="/home/deploy/prod-data"
 
+# Flags parsing
+. /usr/local/lib/bash/shflags
+
+FLAGS_HELP="USAGE: $0 <teiserver-repo-path>
+
+Apply production data from $PROD_DATA to the specified teiserver repo path.
+"
+FLAGS "$@" || exit $?
+eval set -- "${FLAGS_ARGV}"
+
 TARGET_DIR="${1-}"
 if [ -z "$TARGET_DIR" ]; then
-  echo "Usage: $0 <teiserver-repo-path>"
+  echo "ERROR: Missing teiserver repo path"
+  flags_help
   exit 1
 fi
 

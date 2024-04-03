@@ -1,4 +1,15 @@
 ---
+- name: Ensure /usr/local/lib/bash exists
+  ansible.builtin.file:
+    path: /usr/local/lib/bash
+    state: directory
+    mode: '0755'
+- name: Install shflags for tei-* scripts
+  ansible.builtin.get_url:
+    url: 'https://raw.githubusercontent.com/kward/shflags/96694d58ce92065fdd8f8761d930765cb9a8d066/shflags'
+    checksum: 'sha256:ce5f13d6e6c83a5ba0871ba56d52980a87c2a4d7f9d93831feaa12bc10ee2e0f'
+    dest: '/usr/local/lib/bash/shflags'
+    mode: '0644'
 - name: Install tei-* scripts
   ansible.builtin.copy:
     src: 'scripts/{{ item }}'
