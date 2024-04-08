@@ -37,7 +37,7 @@ sudo lxc exec teiserver-test -- /bin/bash
 You can also ssh into it with something like:
 
 ```
-ssh -i test.ssh.key ansible@$(sudo lxc list -f csv -c 4 teiserver-test | grep -E 'eth|enp' | cut -d' ' -f1)
+ssh -i test.ssh.key ansible@$(ansible-inventory --host test | jq -r '.ansible_host')
 ```
 
 ### Cleanup
