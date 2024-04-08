@@ -12,3 +12,10 @@ teiserver_discord_integration: false
 # teiserver_discord_bot_token: 'bot access token'
 # teiserver_discord_bot_name: 'bot name'
 # teiserver_discord_server_id: 12345678
+
+teiserver_email_integration: false
+# teiserver_smtp_server: '10.174.67.1'
+# teiserver_smtp_port: 25
+# teiserver_smtp_username: 'teiserver'
+# teiserver_smtp_password: 'smtppass'
+# teiserver_smtp_tls_verify: false
