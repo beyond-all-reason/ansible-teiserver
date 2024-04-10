@@ -3,7 +3,9 @@ Description=Update TLS certificates periodically
 After=network-online.target
 
 [Timer]
-OnCalendar=*-*-* 03:48:00
+OnCalendar=09:00
+AccuracySec=4h
+RandomizedDelaySec=1h
 Unit=acme.service
 Persistent=True
 
