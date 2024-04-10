@@ -1,0 +1,32 @@
+#!/bin/bash
+
+set -e -u -o pipefail
+
+(
+flock 200
+
+cd /usr/share/GeoIP
+
+for db in GeoIP.dat GeoIPv6.dat; do
+    curl \
+        --output ${db}.gz \
+        --time-cond ${db}.gz \
+        --remote-time \
+        --fail \
+        --no-progress-meter \
+        --location \
+        --retry 5 \
+        --max-time 600 \
+        --remove-on-error \
+        https://mailfud.org/geoip-legacy/${db}.gz
+    gunzip --stdout ${db}.gz > ${db}.tmp
+    sync ${db}.tmp
+    chmod 644 ${db}.tmp
+    if ! cmp -s ${db}.tmp ${db}; then
+        echo "Updating ${db}"
+        mv -f ${db}.tmp ${db}
+    fi
+    rm -f *.tmp
+done
+
+) 200>>"/run/lock/geoipupdate.lock"

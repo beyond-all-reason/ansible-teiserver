@@ -77,3 +77,5 @@
       become_user: postgres
 - name: Configure teiserver
   ansible.builtin.include_tasks: teiserver.yml
+- name: Configure geoipupdates
+  ansible.builtin.include_tasks: geoip.yml

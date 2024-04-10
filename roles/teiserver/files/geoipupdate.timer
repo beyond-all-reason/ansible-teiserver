@@ -1,0 +1,12 @@
+[Unit]
+Description=Update GeoIP database periodically
+After=network-online.target
+
+[Timer]
+OnCalendar=Wed 10:00
+AccuracySec=4h
+RandomizedDelaySec=1h
+Persistent=True
+
+[Install]
+WantedBy=timers.target

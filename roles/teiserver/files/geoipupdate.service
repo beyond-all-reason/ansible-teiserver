@@ -1,0 +1,5 @@
+[Unit]
+Description=Update GeoIP database
+
+[Service]
+ExecStart=/usr/local/bin/geoipupdate

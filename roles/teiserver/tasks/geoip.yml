@@ -1,0 +1,23 @@
+---
+- name: Install geoipupdate script
+  ansible.builtin.copy:
+    src: geoipupdate
+    dest: /usr/local/bin/geoipupdate
+    mode: '0755'
+- name: Copy GeoIP update timer systemd units files
+  ansible.builtin.copy:
+    src: '{{ item }}'
+    dest: '/etc/systemd/system/{{ item }}'
+  loop:
+    - geoipupdate.service
+    - geoipupdate.timer
+  register: systemd_units
+- name: Reload systemd daemon if needed
+  ansible.builtin.systemd:
+    daemon_reload: true
+  when: systemd_units.changed
+- name: Enable GeoIP update systemd timer
+  ansible.builtin.systemd:
+    name: geoipupdate.timer
+    state: started
+    enabled: true

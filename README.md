@@ -86,10 +86,6 @@ You have to create a new Discord server and Discord bot to test this integration
     - Admin -> Site Config -> Discord: Enable the bridge and insert the channel IDs you want to bridge
     - Admin -> Text Callbacks: Add new text callbacks for the `/textcb` command on Discord
 
-### GeoIP
-
-**TODO**
-
 ### Autohost server
 
 This isn't really a dependency, but it's quite useful for testing running of games etc. There are multiple ways it can be set up, but if you are using this playbook to setup prod-like environment, you can use the instruction in https://github.com/beyond-all-reason/ansible-spads-setup playbook to setup prod-like SPADs environment: It plays well with this one.
