@@ -68,7 +68,7 @@
 - name: Set up http server
   ansible.builtin.include_tasks: http.yml
 - name: Get proper TLS certificate
-  ansible.builtin.include_tasks: http.yml
+  ansible.builtin.include_tasks: tls.yml
   when: acquire_tls_certificate
 - name: Configure database
   ansible.builtin.include_tasks: database.yml
