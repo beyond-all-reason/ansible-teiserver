@@ -86,8 +86,8 @@
     mode: '0755'
     state: directory
 - name: Install teiserver service
-  ansible.builtin.template:
-    src: teiserver.service.j2
+  ansible.builtin.copy:
+    src: teiserver.service
     dest: /etc/systemd/system/teiserver.service
     mode: '0644'
   register: systemd_units
