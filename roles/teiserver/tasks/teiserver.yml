@@ -19,6 +19,7 @@
     - apply-prod-data
     - build
     - deploy
+    - pull-deploy-repo
 - name: Setup teiserver source and configs
   become_user: deploy
   block:

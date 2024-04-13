@@ -1,0 +1,15 @@
+#!/bin/bash
+
+set -e -u -o pipefail
+
+REPO="/home/deploy/teiserver-repo"
+
+# Flags parsing
+. /usr/local/lib/bash/shflags
+FLAGS_HELP="USAGE: $0
+
+Pulls the main branch from repo in $REPO
+"
+FLAGS "$@" || exit $?
+
+sudo -u deploy git -C $REPO pull
