@@ -9,6 +9,7 @@ ExecStart=/opt/teiserver/live/bin/teiserver start
 Restart=on-failure
 LimitNOFILE=65536
 KillMode=mixed
+TimeoutStopSec=30
 
 [Install]
 WantedBy=multi-user.target
