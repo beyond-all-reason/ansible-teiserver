@@ -1,81 +1,24 @@
 ---
-- name: Set timezone to UTC
-  community.general.timezone:
-    name: Etc/UTC
-- name: Set hostname
-  ansible.builtin.hostname:
-    name: "teiserver-{{ inventory_hostname }}"
-- name: Install packages
-  ansible.builtin.package:
-    name:
-      - acl  # for ansible become
-      - acmetool
-      - build-essential
-      - curl
-      - dnsutils
-      - geoip-bin
-      - git
-      - grc
-      - htop
-      - jq
-      - man
-      - nano
-      - nginx
-      - podman
-      - podman-docker
-      - postgresql-15
-      - python3-psycopg2  # for ansible postgresql
-      - ssl-cert  # self-signed cert for testing
-      - tcpdump
-      - tmux
-      - ufw
-      - unzip
-      - vim
-      - xz-utils
-    state: present
-- name: Install gum
-  ansible.builtin.apt:
-    deb: https://github.com/charmbracelet/gum/releases/download/v0.13.0/gum_0.13.0_amd64.deb
+- name: Set up base system
+  ansible.builtin.import_tasks: system.yml
+  tags: system
 - name: Set up firewall
-  ansible.builtin.include_tasks: firewall.yml
-- name: Add deploy user
-  ansible.builtin.user:
-    name: deploy
-    shell: /bin/bash
-    groups:
-      - sudo
-    append: true
-    password: '!'  # Disable password login
-- name: Don't require password for sudo for deploy user
-  ansible.builtin.copy:
-    content: |
-      deploy ALL=(ALL) NOPASSWD:ALL
-    dest: /etc/sudoers.d/90-deploy-user
-    mode: '0440'
-- name: Make sure podman resolves docker.io correctly wihout prefix
-  ansible.builtin.lineinfile:
-    path: /etc/containers/registries.conf
-    regexp: '^unqualified-search-registries '
-    insertafter: '^# unqualified-search-registries'
-    line: "unqualified-search-registries = ['docker.io']"
-- name: Allow git to run on any directory
-  ansible.builtin.copy:
-    content: |
-      [safe]
-        directory = *
-    dest: /etc/gitconfig
-    mode: '0644'
+  ansible.builtin.import_tasks: firewall.yml
+  tags: firewall
 - name: Set up http server
-  ansible.builtin.include_tasks: http.yml
+  ansible.builtin.import_tasks: http.yml
+  tags: http
 - name: Get proper TLS certificate
-  ansible.builtin.include_tasks: tls.yml
+  ansible.builtin.import_tasks: tls.yml
   when: acquire_tls_certificate
+  tags: tls
 - name: Configure database
-  ansible.builtin.include_tasks: database.yml
-  args:
-    apply:
-      become_user: postgres
+  ansible.builtin.import_tasks: database.yml
+  become_user: postgres
+  tags: database
 - name: Configure teiserver
-  ansible.builtin.include_tasks: teiserver.yml
+  ansible.builtin.import_tasks: teiserver.yml
+  tags: teiserver
 - name: Configure geoipupdates
-  ansible.builtin.include_tasks: geoip.yml
+  ansible.builtin.import_tasks: geoip.yml
+  tags: geoip
