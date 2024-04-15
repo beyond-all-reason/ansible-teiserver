@@ -90,12 +90,8 @@
     src: teiserver.service
     dest: /etc/systemd/system/teiserver.service
     mode: '0644'
-  register: systemd_units
-- name: Reload systemd daemon
-  ansible.builtin.systemd:
-    daemon_reload: true
-  when: systemd_units.changed
 - name: Enable teiserver service
   ansible.builtin.systemd:
     name: teiserver.service
     enabled: true
+    daemon_reload: true

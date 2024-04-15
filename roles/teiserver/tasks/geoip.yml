@@ -11,13 +11,9 @@
   loop:
     - geoipupdate.service
     - geoipupdate.timer
-  register: systemd_units
-- name: Reload systemd daemon if needed
-  ansible.builtin.systemd:
-    daemon_reload: true
-  when: systemd_units.changed
 - name: Enable GeoIP update systemd timer
   ansible.builtin.systemd:
     name: geoipupdate.timer
     state: started
     enabled: true
+    daemon_reload: true

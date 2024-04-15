@@ -37,16 +37,12 @@
   loop:
     - acme.service
     - acme.timer
-  register: systemd_units
-- name: Reload systemd daemon if needed
-  ansible.builtin.systemd:
-    daemon_reload: true
-  when: systemd_units.changed
 - name: Enable systemd timer
   ansible.builtin.systemd:
     name: acme.timer
     state: started
     enabled: true
+    daemon_reload: true
 - name: Link to acme certificates
   ansible.builtin.file:
     src: '{{ item.from }}'
