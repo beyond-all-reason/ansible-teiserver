@@ -1,4 +1,9 @@
 ---
+- name: Populate service facts
+  ansible.builtin.service_facts:
+- name: Set teiserver running fact
+  ansible.builtin.set_fact:
+    teiserver_running: '{{ "teiserver.service" in services and services["teiserver.service"]["state"] == "running" }}'
 - name: Create postgres database
   community.postgresql.postgresql_db:
     name: '{{ database_name }}'
@@ -33,7 +38,7 @@
   ansible.builtin.systemd:
     name: postgresql@15-main.service
     state: restarted
-  when: pg_shared_preload_libraries.changed
+  when: pg_shared_preload_libraries.changed and not teiserver_running
   become_user: root
 - name: Tune Postgresql configuration
   community.postgresql.postgresql_set:
@@ -52,8 +57,11 @@
     name: postgresql@15-main.service
     state: restarted
   become_user: root
-  when: pstune.results | selectattr('changed') | map(attribute='restart_required') is any
-  tags: restart-postgresql
+  when: pstune.results | selectattr('changed') | map(attribute='restart_required') is any and not teiserver_running
+- name: Print note about restart
+  ansible.builtin.debug:
+    msg: "WARNING: Changes required postgresql restart, but teiserver is running. Please handle manually."
+  when: teiserver_running and (pg_shared_preload_libraries.changed or pstune.results | selectattr('changed') | map(attribute='restart_required') is any)
 - name: Enabled pg_stat_statements extension
   community.postgresql.postgresql_ext:
     name: pg_stat_statements
