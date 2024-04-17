@@ -1,0 +1,31 @@
+---
+- name: Ensure backup config directory exists
+  ansible.builtin.file:
+    path: /usr/local/etc/backup
+    state: directory
+    mode: '0755'
+- name: Install rclone config
+  ansible.builtin.copy:
+    content: '{{ backup_rclone_config }}'
+    dest: /usr/local/etc/backup/rclone.conf
+    mode: '0600'
+  no_log: true
+- name: Install backup script
+  ansible.builtin.template:
+    src: take-db-backup.sh.j2
+    dest: /usr/local/bin/tei-take-db-backup
+    mode: '0755'
+- name: Copy database backup timer systemd units files
+  ansible.builtin.copy:
+    src: '{{ item }}'
+    dest: '/etc/systemd/system/{{ item }}'
+    mode: '0644'
+  loop:
+    - tei-db-backup.service
+    - tei-db-backup.timer
+- name: Enable database backups systemd timer
+  ansible.builtin.systemd:
+    name: tei-db-backup.timer
+    state: started
+    enabled: true
+    daemon_reload: true

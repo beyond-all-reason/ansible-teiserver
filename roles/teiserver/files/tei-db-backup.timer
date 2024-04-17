@@ -1,0 +1,9 @@
+[Unit]
+Description=Take database backup periodically
+
+[Timer]
+OnCalendar=0/8:00
+RandomizedDelaySec=5m
+
+[Install]
+WantedBy=timers.target

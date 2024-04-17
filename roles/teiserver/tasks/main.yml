@@ -16,6 +16,9 @@
   ansible.builtin.import_tasks: database.yml
   become_user: postgres
   tags: database
+- name: Configure backups
+  ansible.builtin.import_tasks: backup.yml
+  tags: backup
 - name: Configure teiserver
   ansible.builtin.import_tasks: teiserver.yml
   tags: teiserver

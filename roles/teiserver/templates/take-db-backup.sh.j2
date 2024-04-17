@@ -1,0 +1,27 @@
+#!/bin/bash
+
+set -e -u -o pipefail
+
+# Flags parsing
+. /usr/local/lib/bash/shflags
+FLAGS_HELP="USAGE: $0
+
+Take backup and copy to the configured storage.
+"
+FLAGS "$@" || exit $?
+
+if [[ $(id -u) != 0 ]]; then
+    echo "This script must be run as root" >&2
+    exit 1
+fi
+
+mkdir -p /var/tmp/backup
+chmod 700 /var/tmp/backup
+
+BACKUP_FILE="{{ database_name }}-$(date +%Y%m%d%H%M%S).sql.zst"
+pg_dump --username={{ database_user }} --dbname={{ database_name }} \
+    | zstd --long -9 --stdout > /var/tmp/backup/$BACKUP_FILE
+
+rclone --config /usr/local/etc/backup/rclone.conf copyto /var/tmp/backup/$BACKUP_FILE "backup:{{ backup_path }}/$BACKUP_FILE"
+
+rm -f /var/tmp/backup/*.sql.zst

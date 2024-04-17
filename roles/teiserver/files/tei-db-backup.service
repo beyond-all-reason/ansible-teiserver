@@ -1,0 +1,8 @@
+[Unit]
+Description=Take database backup
+
+[Service]
+Nice=10
+CPUSchedulingPolicy=batch
+IOSchedulingPriority=6
+ExecStart=/usr/local/bin/tei-take-db-backup

@@ -26,6 +26,7 @@
       - podman-docker
       - postgresql-15
       - python3-psycopg2  # for ansible postgresql
+      - rclone  # for backups
       - ssl-cert  # self-signed cert for testing
       - tcpdump
       - tmux
