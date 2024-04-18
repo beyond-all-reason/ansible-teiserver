@@ -18,10 +18,10 @@ fi
 mkdir -p /var/tmp/backup
 chmod 700 /var/tmp/backup
 
-BACKUP_FILE="{{ database_name }}-$(date +%Y%m%d%H%M%S).sql.zst"
-pg_dump --username={{ database_user }} --dbname={{ database_name }} \
+BACKUP_FILE="{{ database_name }}-$(date +%Y%m%d%H%M%S).dump.zst"
+pg_dump -U {{ database_user }} -d {{ database_name }} -Fc -Z0 \
     | zstd --long -9 --stdout > /var/tmp/backup/$BACKUP_FILE
 
 rclone --config /usr/local/etc/backup/rclone.conf copyto /var/tmp/backup/$BACKUP_FILE "backup:{{ backup_path }}/$BACKUP_FILE"
 
-rm -f /var/tmp/backup/*.sql.zst
+rm -f /var/tmp/backup/*.dump.zst
