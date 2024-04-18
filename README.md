@@ -2,6 +2,8 @@
 
 This is an [Ansible](https://en.wikipedia.org/wiki/Ansible_(software)) playbook for setting up [Teiserver](https://github.com/beyond-all-reason/teiserver/) instance for BAR.
 
+This readme contains the basic information about playbook. There is more documentation available for different aspects in the [docs](docs/) directory.
+
 ## Usage
 
 If you are trying to set up and test things locally and you don't have access to BAR production instance, first see the [Local testing](#local-testing) section. If you have access to the server set up with this playbook and you want to figure out how to use it, see the [Server usage](#server-usage) section.
