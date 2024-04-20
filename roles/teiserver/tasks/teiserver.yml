@@ -22,6 +22,7 @@
     mode: '0755'
   loop:
     - rel-build
+    - rel-delete
     - rel-deploy
     - rel-list
     - rel-tag

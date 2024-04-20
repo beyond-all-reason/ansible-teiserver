@@ -1,0 +1,64 @@
+#!/bin/bash
+
+set -e -u -o pipefail
+
+if [[ $(id -u) != 0 ]]; then
+    gum style --faint "Elevating to run as root"
+    exec sudo "$0" "$@"
+fi
+
+# Flags parsing
+. /usr/local/lib/bash/shflags
+
+DEFINE_string 'version' '' 'Version to delete, e.g. af99e8e1a9, latest' 'v'
+DEFINE_boolean 'skip_confirmation' false 'Skip removal confirmation prompt' 'y'
+
+FLAGS_HELP="USAGE: $0 [flags]
+
+Remove a teiserver release files completly.
+"
+FLAGS "$@" || exit $?
+eval set -- "${FLAGS_ARGV}"
+
+# Main script
+. /usr/local/lib/bash/tei-bash-lib
+
+cd $_TEI_INSTALL_DIR
+
+(
+gum spin --title "Waiting for deploy lock held by $(cat $_TEI_DEPLOY_LOCK)..." -- flock 200
+echo "$(logname):$$" > $_TEI_DEPLOY_LOCK
+
+ver="${FLAGS_version}"
+if [[ -z "$ver" ]]; then
+    ver=$(_tei_select_version)
+fi
+selected="$(_tei_resolve_version "$ver")"
+
+if [[ -L live && $(readlink live) == "ver-$selected" ]]; then
+    gum style --bold "You can't delete the live version."
+    exit 0
+fi
+
+gum style --bold "Selected version $selected, build info:"
+cat "ver-$selected/build-info.json" | jq
+
+if [[ "${FLAGS_skip_confirmation}" == "${FLAGS_FALSE}" ]] \
+  && ! gum confirm "Are to sure to delete version $selected?"; then
+    exit 0
+fi
+
+# Remove all tags of the version we are removing
+verdir="ver-$selected"
+while read -r tag ver; do
+    if [[ "$verdir" == "$ver" ]]; then
+        rm "$tag"
+    fi
+done < <(_tei_list_tags)
+
+# Remove release files itself
+rm -r "$verdir"
+
+gum style --bold "Deleted version $selected."
+
+) 200>>$_TEI_DEPLOY_LOCK
