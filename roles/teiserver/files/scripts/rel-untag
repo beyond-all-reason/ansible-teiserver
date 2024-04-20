@@ -1,0 +1,56 @@
+#!/bin/bash
+
+set -e -u -o pipefail
+
+if [[ $(id -u) != 0 ]]; then
+    gum style --faint "Elevating to run as root"
+    exec sudo "$0" "$@"
+fi
+
+# Flags parsing
+. /usr/local/lib/bash/shflags
+
+DEFINE_string 'tag' '' 'Name of the tag to remove' 't'
+DEFINE_boolean 'skip_confirmation' false 'Skip deploy confirmation prompt' 'y'
+
+FLAGS_HELP="USAGE: $0 [flags]
+
+Untag a teiserver release.
+"
+FLAGS "$@" || exit $?
+eval set -- "${FLAGS_ARGV}"
+
+# Main script
+. /usr/local/lib/bash/tei-bash-lib
+
+cd $_TEI_INSTALL_DIR
+
+(
+gum spin --title "Waiting for deploy lock held by $(cat $_TEI_DEPLOY_LOCK)..." -- flock 200
+echo "$(logname):$$" > $_TEI_DEPLOY_LOCK
+
+tag="${FLAGS_tag}"
+if [[ -z "$tag" ]]; then
+    tag=$(_tei_list_tags \
+        | cut -f1 \
+        | grep -v -E '^latest|live|rollback$' \
+        | gum filter --height=10 --sort --placeholder="Tag to remove...")
+fi
+
+if [[ $tag =~ ^latest|live|rollback$ ]]; then
+    gum style --bold "Cannot remove reserved tag $tag"
+    exit 1
+elif [[ ! -L $tag ]]; then
+    gum style --bold "Tag $tag does not exist"
+    exit 1
+fi
+
+if [[ "${FLAGS_skip_confirmation}" == "${FLAGS_FALSE}" ]] \
+  && ! gum confirm "Are to sure you want to remove tag $tag?"; then
+    exit 0
+fi
+
+rm $tag
+gum style --bold "Removed tag $tag"
+
+) 200>>$_TEI_DEPLOY_LOCK

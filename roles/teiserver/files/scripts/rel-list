@@ -1,0 +1,18 @@
+#!/bin/bash
+
+set -e -u -o pipefail
+
+# Flags parsing
+. /usr/local/lib/bash/shflags
+
+FLAGS_HELP="USAGE: $0
+
+List teiserver releases.
+"
+FLAGS "$@" || exit $?
+eval set -- "${FLAGS_ARGV}"
+
+# Main script
+. /usr/local/lib/bash/tei-bash-lib
+
+_tei_list_versions | gum table -c version,time,actor,commit,repo,tags -p

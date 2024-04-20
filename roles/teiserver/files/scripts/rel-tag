@@ -1,0 +1,61 @@
+#!/bin/bash
+
+set -e -u -o pipefail
+
+if [[ $(id -u) != 0 ]]; then
+    gum style --faint "Elevating to run as root"
+    exec sudo "$0" "$@"
+fi
+
+# Flags parsing
+. /usr/local/lib/bash/shflags
+
+DEFINE_string 'version' '' 'Version to tag, e.g. af99e8e1a9, latest' 'v'
+DEFINE_string 'tag' '' 'Name of the tag to apply' 't'
+DEFINE_boolean 'force' false 'Overwrite existing tag without prompting' 'f'
+
+FLAGS_HELP="USAGE: $0 [flags]
+
+Tag a teiserver release.
+"
+FLAGS "$@" || exit $?
+eval set -- "${FLAGS_ARGV}"
+
+# Main script
+. /usr/local/lib/bash/tei-bash-lib
+
+cd $_TEI_INSTALL_DIR
+
+(
+gum spin --title "Waiting for deploy lock held by $(cat $_TEI_DEPLOY_LOCK)..." -- flock 200
+echo "$(logname):$$" > $_TEI_DEPLOY_LOCK
+
+tag="${FLAGS_tag}"
+if [[ -z "$tag" ]]; then
+    tag="$(gum input --placeholder="Tag name...")"
+fi
+if [[ ! "$tag" =~ ^[a-z0-9_.-]{1,20}$ ]]; then
+    gum style --bold 'Tag name must match ^[a-z0-9_.-]{1,20}$' >&2
+    exit 1
+elif [[ "$tag" =~ ^ver-.*|latest|live|rollback$ ]]; then
+    gum style --bold "Tag name can't start with ver- or be special ones: latest, live, rollback" >&2
+    exit 1
+fi
+
+if [[ -z "${FLAGS_version}" ]]; then
+    ver=$(_tei_select_version)
+else
+    ver="${FLAGS_version}"
+fi
+version="$(_tei_resolve_version "$ver")"
+
+if [[ -L $tag && "${FLAGS_force}" == "${FLAGS_FALSE}" ]] \
+  && ! gum confirm "Tag $tag already used, override?"; then
+    exit 0
+fi
+
+ln -sfT "ver-$version" $tag
+
+gum style --bold "Tagged version $version as $tag"
+
+) 200>>$_TEI_DEPLOY_LOCK

@@ -23,6 +23,9 @@
   loop:
     - rel-build
     - rel-deploy
+    - rel-list
+    - rel-tag
+    - rel-untag
     - repo-apply-prod-data
     - repo-pull
 - name: Setup teiserver source and configs
