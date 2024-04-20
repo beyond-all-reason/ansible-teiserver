@@ -59,6 +59,22 @@
     regexp: '^unqualified-search-registries '
     insertafter: '^# unqualified-search-registries'
     line: "unqualified-search-registries = ['docker.io']"
+- name: Create podman-auto-update.service.d directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/podman-auto-update.service.d
+    state: directory
+    recurse: true
+    mode: '0755'
+- name: Create podman-auto-update.service.d/01-longer-prune.conf
+  ansible.builtin.copy:
+    content: |
+      # We expand the prune time to 10 days so that build cache
+      # is not pruned every 24h with the default value.
+      [Service]
+      ExecStartPost=
+      ExecStartPost=/usr/bin/podman image prune -f --filter until=240h
+    dest: /etc/systemd/system/podman-auto-update.service.d/01-longer-prune.conf
+    mode: '0644'
 - name: Allow git to run on any directory
   ansible.builtin.copy:
     content: |
