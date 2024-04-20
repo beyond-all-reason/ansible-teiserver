@@ -1,0 +1,22 @@
+#!/bin/bash
+
+set -e -u -o pipefail
+
+MAIN_REPO="/home/deploy/teiserver-repo"
+
+# Flags parsing
+. /usr/local/lib/bash/shflags
+
+DEFINE_string 'repo' $MAIN_REPO 'Path to the repo to build' 'r'
+
+FLAGS_HELP="USAGE: $0 [flags]
+
+Pulls the main branch in repo.
+"
+FLAGS "$@" || exit $?
+
+if [[ "${FLAGS_repo}" == $MAIN_REPO ]]; then
+    sudo -u deploy git -C $MAIN_REPO pull
+else
+    git -C "${FLAGS_repo}" pull
+fi

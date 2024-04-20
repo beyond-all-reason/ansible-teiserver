@@ -12,8 +12,8 @@
   no_log: true
 - name: Install backup script
   ansible.builtin.template:
-    src: take-db-backup.sh.j2
-    dest: /usr/local/bin/tei-take-db-backup
+    src: scripts/backup-take.sh.j2
+    dest: /usr/local/bin/tei-backup-take
     mode: '0755'
 - name: Copy database backup timer systemd units files
   ansible.builtin.copy:

@@ -29,7 +29,7 @@ if [[ ! -d "$REPO" ]]; then
 fi
 
 if [[ ! -f "$REPO/config/prod.secret.exs" ]]; then
-  gum style --bold "Repo $REPO does not contain config/prod.secret.exs, did you forget to run tei-apply-prod-data?"
+  gum style --bold "Repo $REPO does not contain config/prod.secret.exs, did you forget to run tei-repo-apply-prod-data?"
   exit 1
 fi
 

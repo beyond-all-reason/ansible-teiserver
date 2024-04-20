@@ -5,4 +5,4 @@ Description=Take database backup
 Nice=10
 CPUSchedulingPolicy=batch
 IOSchedulingPriority=6
-ExecStart=/usr/local/bin/tei-take-db-backup
+ExecStart=/usr/local/bin/tei-backup-take

@@ -9,7 +9,7 @@ A set of step by step guides for how to execute some procedures.
 The backup is taken automatically periodically by the `take-db-backup` systemd service. To take the backup manually, you can start the service, or manually execute the scripts it runs:
 
 ```
-sudo tei-take-db-backup
+sudo tei-backup-take
 ```
 
 The script uploads the backup file using rclone to the storage configured in `/usr/local/etc/backup/rclone.conf`.
@@ -21,7 +21,7 @@ It overall depends where the backups are stored. One way to do it is:
 1. Get rclone base command, example:
 
    ```
-   $ cat /usr/local/bin/tei-take-db-backup | grep rclone
+   $ cat /usr/local/bin/tei-backup-take | grep rclone
    rclone --config /usr/local/etc/backup/rclone.conf copyto /var/tmp/backup/$BACKUP_FILE "backup:/var/backups/teiserver/$BACKUP_FILE"
    ```
 

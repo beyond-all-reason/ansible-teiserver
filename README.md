@@ -63,11 +63,11 @@ The `tei-*` scripts are there to help with that process, so in practice, deployi
 
 ```
 # Pull the latest code to the /home/deploy/teiserver-repo/
-tei-pull-deploy-repo
+tei-repo-pull
 # Build the new release into opt
-tei-build
+tei-rel-build
 # Deploy the new release
-tei-deploy
+tei-rel-deploy
 ```
 
 ALl scripts start with `tei-` so you can type `tei-[TAB][TAB]` to see the list of available commands in bash. All of them also support `--help` flag to show the usage.
@@ -83,13 +83,13 @@ The example session for on the users could look like:
 marek@teiserver-test:~$ git clone https://github.com/beyond-all-reason/teiserver.git
 marek@teiserver-test:~$ cd teiserver
 # Apply the production config to the local checkout
-marek@teiserver-test:~/teiserver$ tei-apply-prod-data .
+marek@teiserver-test:~/teiserver$ tei-repo-apply-prod-data .
 # Do whatever code changes needed
 # (...)
 # Build the local checkout into new release
-marek@teiserver-test:~/teiserver$ tei-build --repo .
+marek@teiserver-test:~/teiserver$ tei-rel-build --repo .
 # Deploy the new release
-marek@teiserver-test:~/teiserver$ tei-deploy
+marek@teiserver-test:~/teiserver$ tei-rel-deploy
 ```
 
 ## Local testing

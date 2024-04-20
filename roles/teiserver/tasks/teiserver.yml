@@ -21,10 +21,10 @@
     dest: '/usr/local/bin/tei-{{ item }}'
     mode: '0755'
   loop:
-    - apply-prod-data
-    - build
-    - deploy
-    - pull-deploy-repo
+    - rel-build
+    - rel-deploy
+    - repo-apply-prod-data
+    - repo-pull
 - name: Setup teiserver source and configs
   become_user: deploy
   block:
@@ -68,7 +68,7 @@
         dest: /home/deploy/teiserver.Dockerfile
         mode: '0644'
     - name: Apply prod data
-      ansible.builtin.command: tei-apply-prod-data /home/deploy/teiserver-repo
+      ansible.builtin.command: tei-repo-apply-prod-data /home/deploy/teiserver-repo
       when: prod_secret_file.changed or vm_args_file.changed or fontawesome_file.changed
 - name: Add teiserver user
   ansible.builtin.user:
