@@ -1,0 +1,11 @@
+[Unit]
+Description=Rebuild teiserver repo periodically in podman
+After=network-online.target
+
+[Timer]
+OnCalendar=Mon,Thu 04:00
+AccuracySec=10m
+RandomizedDelaySec=30m
+
+[Install]
+WantedBy=timers.target

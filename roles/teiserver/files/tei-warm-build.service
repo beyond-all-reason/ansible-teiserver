@@ -1,0 +1,8 @@
+[Unit]
+Description=Runs podman build of teiserver to prewarm build caches.
+
+[Service]
+Nice=10
+CPUSchedulingPolicy=batch
+IOSchedulingPriority=6
+ExecStart=/usr/bin/podman build --pull=newer --cache-ttl=24h --quiet -f /home/deploy/teiserver.Dockerfile /home/deploy/teiserver-repo
