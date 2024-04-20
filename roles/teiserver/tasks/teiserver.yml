@@ -25,6 +25,7 @@
     - rel-delete
     - rel-deploy
     - rel-list
+    - rel-prune-old
     - rel-tag
     - rel-untag
     - repo-apply-prod-data
