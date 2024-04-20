@@ -21,64 +21,19 @@ FLAGS "$@" || exit $?
 eval set -- "${FLAGS_ARGV}"
 
 # Main script
+. /usr/local/lib/bash/tei-bash-lib
 
-cd /opt/teiserver
+cd $_TEI_INSTALL_DIR
 
-function select_version {
-    # Build a map from build versions to tags (filesystem links)
-    declare -A tags
-    while read -r tag; do
-        version=$(basename $(readlink -f "$tag"))
-        tags["$version"]="$tag ${tags["$version"]-}"
-    done < <(find -maxdepth 1 -type l -printf "%P\n")
-
-    # Create an interactive table with list of versions
-    while read -r build_info; do
-        version=$(dirname "$build_info")
-        cat "$build_info" | jq \
-            --arg tags "${tags["$version"]-}" \
-            '. + {tags: $tags | rtrimstr(" ") }'
-    done \
-        < <(find -maxdepth 2 -regextype posix-extended -regex './ver-[a-f0-9]{10}/build-info.json' -printf "%P\n") \
-        | jq -s -r '.
-            | sort_by(.time) | reverse | .[]
-            | [
-                .image[0:10],
-                .time,
-                .actor,
-                .commit[0:7] + (if .dirty == "true" then "*" else "" end),
-                .repo,
-                .tags
-              ]
-            | @csv' \
-        | gum table -c version,time,actor,commit,repo,tags -w11,20,10,8,30,500 --height=12 \
-        | cut -d, -f1
-}
-
-DEPLOY_LOCK="/run/lock/teiserver-deploy.lock"
 (
-gum spin --title "Waiting for deploy lock held by $(cat $DEPLOY_LOCK)..." -- flock 200
-echo "$(logname):$$" > $DEPLOY_LOCK
+gum spin --title "Waiting for deploy lock held by $(cat $_TEI_DEPLOY_LOCK)..." -- flock 200
+echo "$(logname):$$" > $_TEI_DEPLOY_LOCK
 
-if [[ -z "${FLAGS_version}" ]]; then
-    gum style --bold "Pick a version to deploy"
-
-    selected=$(select_version)
-    if [[ -z "$selected" ]]; then
-        gum style --bold "No version selected, exiting"
-        exit 0
-    fi
-else
-    ver="${FLAGS_version}"
-    if [[ -d "ver-$ver" ]]; then
-        selected="$ver"
-    elif [[ -L "$ver" ]]; then
-        selected=$(readlink "$ver" | cut -d- -f2)
-    else
-        gum style --bold "Version $ver not found"
-        exit 1
-    fi
+ver="${FLAGS_version}"
+if [[ -z "$ver" ]]; then
+    ver=$(_tei_select_version)
 fi
+selected="$(_tei_resolve_version "$ver")"
 
 if [[ -L live && $(readlink live) == "ver-$selected" ]]; then
     gum style --bold "Selected version $selected is already deployed"
@@ -107,4 +62,4 @@ ln -sfT "ver-$selected" live
 gum spin --title "Restarting teiserver..." -- systemctl restart teiserver
 gum style --bold "Done"
 
-) 200>>$DEPLOY_LOCK
+) 200>>$_TEI_DEPLOY_LOCK

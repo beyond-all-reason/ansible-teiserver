@@ -10,6 +10,11 @@
     checksum: 'sha256:ce5f13d6e6c83a5ba0871ba56d52980a87c2a4d7f9d93831feaa12bc10ee2e0f'
     dest: '/usr/local/lib/bash/shflags'
     mode: '0644'
+- name: Install tei-bash-lib
+  ansible.builtin.copy:
+    src: 'tei-bash-lib.sh'
+    dest: '/usr/local/lib/bash/tei-bash-lib'
+    mode: '0644'
 - name: Install tei-* scripts
   ansible.builtin.copy:
     src: 'scripts/{{ item }}'

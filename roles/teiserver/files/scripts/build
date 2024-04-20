@@ -20,6 +20,7 @@ FLAGS "$@" || exit $?
 eval set -- "${FLAGS_ARGV}"
 
 # Main script
+. /usr/local/lib/bash/tei-bash-lib
 
 REPO="$(realpath -e "${FLAGS_repo}")"
 if [[ ! -d "$REPO" ]]; then
@@ -45,12 +46,11 @@ IMAGE_ID=$(cat "$IMAGE_ID_FILE" | cut -d: -f2)
 rm "$IMAGE_ID_FILE"
 
 VER="${IMAGE_ID::10}"
-VER_DIR="/opt/teiserver/ver-$VER"
+VER_DIR="$_TEI_INSTALL_DIR/ver-$VER"
 
-DEPLOY_LOCK="/run/lock/teiserver-deploy.lock"
 (
-gum spin --title "Waiting for deploy lock held by $(cat $DEPLOY_LOCK)..." -- flock 200
-echo "$(logname):$$" > $DEPLOY_LOCK
+gum spin --title "Waiting for deploy lock held by $(cat $_TEI_DEPLOY_LOCK)..." -- flock 200
+echo "$(logname):$$" > $_TEI_DEPLOY_LOCK
 
 if [[ -d "$VER_DIR" ]]; then
   gum style --bold "Same version $VER is already installed"
@@ -74,6 +74,6 @@ EOF
 fi
 
 gum style --bold "Tagging the version $VER as latest"
-ln -sfT "ver-$VER" /opt/teiserver/latest
+ln -sfT "ver-$VER" $_TEI_INSTALL_DIR/latest
 
-) 200>>$DEPLOY_LOCK
+) 200>>$_TEI_DEPLOY_LOCK
