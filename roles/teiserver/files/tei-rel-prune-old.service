@@ -1,0 +1,6 @@
+[Unit]
+Description=Cleanup old teiserver releases
+
+[Service]
+IOSchedulingPriority=6
+ExecStart=/usr/local/bin/tei-rel-prune-old --skip_confirmation

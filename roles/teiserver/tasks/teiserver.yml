@@ -105,16 +105,21 @@
     name: teiserver.service
     enabled: true
     daemon_reload: true
-- name: Copy teiserver build prewarming systemd units files
+- name: Copy teiserver maintenance systemd units files
   ansible.builtin.copy:
     src: '{{ item }}'
     dest: '/etc/systemd/system/{{ item }}'
   loop:
     - tei-warm-build.service
     - tei-warm-build.timer
-- name: Enable tei-warm-build timer
+    - tei-rel-prune-old.service
+    - tei-rel-prune-old.timer
+- name: Enable teiserver maintenance timers
   ansible.builtin.systemd:
-    name: tei-warm-build.timer
+    name: '{{ item }}'
     state: started
     enabled: true
     daemon_reload: true
+  loop:
+    - tei-warm-build.timer
+    - tei-rel-prune-old.timer

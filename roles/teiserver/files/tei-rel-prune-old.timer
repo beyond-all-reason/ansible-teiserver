@@ -1,0 +1,10 @@
+[Unit]
+Description=Daily cleanup of old teiserver releases
+
+[Timer]
+OnCalendar=04:00
+AccuracySec=10m
+RandomizedDelaySec=30m
+
+[Install]
+WantedBy=timers.target
