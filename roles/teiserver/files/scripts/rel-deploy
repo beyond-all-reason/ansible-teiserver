@@ -25,9 +25,7 @@ eval set -- "${FLAGS_ARGV}"
 
 cd $_TEI_INSTALL_DIR
 
-(
-gum spin --title "Waiting for deploy lock held by $(cat $_TEI_DEPLOY_LOCK)..." -- flock 200
-echo "$(logname):$$" > $_TEI_DEPLOY_LOCK
+_tei_lock_deploy
 
 ver="${FLAGS_version}"
 if [[ -z "$ver" ]]; then
@@ -61,5 +59,3 @@ ln -sfT "ver-$selected" live
 
 gum spin --title "Restarting teiserver..." -- systemctl restart teiserver
 gum style --bold "Done"
-
-) 200>>$_TEI_DEPLOY_LOCK

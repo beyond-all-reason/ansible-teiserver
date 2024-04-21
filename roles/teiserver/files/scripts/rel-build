@@ -48,9 +48,7 @@ rm "$IMAGE_ID_FILE"
 VER="${IMAGE_ID::10}"
 VER_DIR="$_TEI_INSTALL_DIR/ver-$VER"
 
-(
-gum spin --title "Waiting for deploy lock held by $(cat $_TEI_DEPLOY_LOCK)..." -- flock 200
-echo "$(logname):$$" > $_TEI_DEPLOY_LOCK
+_tei_lock_deploy
 
 if [[ -d "$VER_DIR" ]]; then
   gum style --bold "Same version $VER is already installed"
@@ -75,5 +73,3 @@ fi
 
 gum style --bold "Tagging the version $VER as latest"
 ln -sfT "ver-$VER" $_TEI_INSTALL_DIR/latest
-
-) 200>>$_TEI_DEPLOY_LOCK

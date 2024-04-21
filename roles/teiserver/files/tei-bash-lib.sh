@@ -60,3 +60,18 @@ function _tei_resolve_version {
         return 1
     fi
 }
+
+function _tei_lock_deploy {
+    exec 200>>$_TEI_DEPLOY_LOCK
+
+    local msg="Waiting for deploy lock held by $(cat $_TEI_DEPLOY_LOCK)..."
+    if [ -t 0 ]; then
+        gum spin --title "$msg" -- flock 200
+    else
+        if ! flock -n 200; then
+            echo "$msg"
+            flock 200
+        fi
+    fi
+    echo "$(logname):$$" > $_TEI_DEPLOY_LOCK
+}

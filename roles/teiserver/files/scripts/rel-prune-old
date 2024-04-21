@@ -44,12 +44,7 @@ function versions_to_drop {
         | tr -d '"' | tr , ' ')
 }
 
-(
-if ! flock -n 200; then
-    echo "Waiting for deploy lock held by $(cat $_TEI_DEPLOY_LOCK)..."
-    flock 200
-fi
-echo "$(logname):$$" > $_TEI_DEPLOY_LOCK
+_tei_lock_deploy
 
 TO_DROP="$(versions_to_drop "$(date -d "$FLAGS_days days ago" -u +"%Y-%m-%dT%H:%M:%SZ")")"
 
@@ -69,5 +64,3 @@ for version in $TO_DROP; do
     fi
     echo "$version"
 done
-
-) 200>>$_TEI_DEPLOY_LOCK
