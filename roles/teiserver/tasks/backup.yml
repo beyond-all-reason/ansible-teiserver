@@ -15,17 +15,17 @@
     src: scripts/backup-take.sh.j2
     dest: /usr/local/bin/tei-backup-take
     mode: '0755'
-- name: Copy database backup timer systemd units files
+- name: Copy backup timer systemd units files
   ansible.builtin.copy:
     src: '{{ item }}'
     dest: '/etc/systemd/system/{{ item }}'
     mode: '0644'
   loop:
-    - tei-db-backup.service
-    - tei-db-backup.timer
-- name: Enable database backups systemd timer
+    - tei-backup.service
+    - tei-backup.timer
+- name: Enable backups systemd timer
   ansible.builtin.systemd:
-    name: tei-db-backup.timer
+    name: tei-backup.timer
     state: started
     enabled: true
     daemon_reload: true

@@ -1,5 +1,5 @@
 [Unit]
-Description=Take database backup
+Description=Take backup
 
 [Service]
 Nice=10

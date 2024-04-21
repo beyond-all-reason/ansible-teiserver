@@ -1,5 +1,5 @@
 [Unit]
-Description=Take database backup periodically
+Description=Take backup periodically
 
 [Timer]
 OnCalendar=0/8:00
