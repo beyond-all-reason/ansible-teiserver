@@ -29,3 +29,23 @@
     state: started
     enabled: true
     daemon_reload: true
+- name: Install decayer
+  ansible.builtin.get_url:
+    url: 'https://raw.githubusercontent.com/p2004a/decayer/e33d26900698bb8d2f0d0895ebfd3eb9189b27bd/decayer.py'
+    checksum: 'sha256:0c6543a57151cbfea9838f8b2076089681ac6eef10e4418a0e2dff23e82e64bc'
+    dest: '/usr/local/bin/decayer'
+    mode: '0755'
+- name: Install decayer systemd unit files
+  ansible.builtin.template:
+    src: '{{ item }}'
+    dest: '/etc/systemd/system/{{ item }}'
+    mode: '0644'
+  loop:
+    - backups-decay.service
+    - backups-decay.timer
+- name: Enable/disable backups decay systemd timer
+  ansible.builtin.systemd:
+    name: backups-decay.timer
+    state: "{{ backup_decay_enabled | ternary('started', 'stopped') }}"
+    enabled: "{{ backup_decay_enabled }}"
+    daemon_reload: true

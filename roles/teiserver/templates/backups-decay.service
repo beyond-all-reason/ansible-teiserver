@@ -1,0 +1,6 @@
+[Unit]
+Description=Decay backup files
+
+[Service]
+Environment="RCLONE_CONFIG=/usr/local/etc/backup/rclone.conf"
+ExecStart=/usr/local/bin/decayer backup:{{ backup_path }} {{ backup_decay }}

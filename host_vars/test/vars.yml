@@ -6,6 +6,8 @@ backup_path: /var/backups/teiserver
 backup_rclone_config: |
   [backup]
   type = local
+backup_decay_enabled: true
+backup_decay: '1d1h@2d 0@7d'
 teiserver_setup_key: 'abcdefg'
 teiserver_guardian_secret: '/ANlzFZ5zIqKjE8YGyuU27CVathb2PByIDpNQyj6ZiZBO+kmKvT7763r5bOJO23dPa55b6iKD4ZYIcKHHJ4R2g=='
 teiserver_secret_key_base: 'hK6a0+dcyj79O3u7M1yY2btCZ52QFdp3xAB6YzANSlPBiAe1q3PDJgSriQlBoW1sB6bm2ckIBMK9yEWt3Jm8bA=='

@@ -1,0 +1,10 @@
+[Unit]
+Description=Decay backup files periodically
+
+[Timer]
+OnCalendar=1/8:00
+RandomizedDelaySec=5m
+Persistent=True
+
+[Install]
+WantedBy=timers.target
