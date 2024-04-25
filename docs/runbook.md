@@ -64,3 +64,21 @@ Assuming that you have the backup file e.g. `teiserver_prod-20240418222419.dump.
    ```
    sudo systemctl start teiserver
    ```
+
+### Streaming copy of database
+
+To speedup the migration of the database from one server to another, if we want to minimize the time, the taking backup, compressing, sending, and then restoring can be pipelined into a single invocation.
+
+1. SSH into the source server
+
+   Note that for the next command, ssh needs to be able to connect to the destination server without asking for a password. You can use ssh agent forwarding or sshpass to achieve that. The sudo command on the destination server needs to be able to run without asking for a password too.
+
+2. Run the following command on the source server:
+
+   ```
+   pg_dump -U teiserver_prod -d teiserver_prod -Fc -Z0 \
+      | zstd -T4 --long -9 --stdout \
+      | tee backup.dump.zst \
+      | ssh user@target-server \
+         "zstdcat | sudo -i -u postgres pg_restore -d postgres --clean --create"
+   ```
