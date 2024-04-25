@@ -1,15 +1,12 @@
 #!/bin/bash
 
 set -e -u -o pipefail
+. /usr/local/lib/bash/shflags
 
 MAIN_REPO="/home/deploy/teiserver-repo"
 
-# Flags parsing
-. /usr/local/lib/bash/shflags
-
 DEFINE_string 'repo' $MAIN_REPO 'Path to the repo to build' 'r'
-
-FLAGS_HELP="USAGE: $0 [flags]
+FLAGS_HELP="USAGE: $(basename $0) [flags]
 
 Pulls the main branch in repo.
 "

@@ -1,13 +1,11 @@
 #!/bin/bash
 
 set -e -u -o pipefail
+. /usr/local/lib/bash/shflags
 
 PROD_DATA="/home/deploy/prod-data"
 
-# Flags parsing
-. /usr/local/lib/bash/shflags
-
-FLAGS_HELP="USAGE: $0 <teiserver-repo-path>
+FLAGS_HELP="USAGE: $(basename $0) [flags] <teiserver-repo-path>
 
 Apply production data from $PROD_DATA to the specified teiserver repo path.
 "

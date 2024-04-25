@@ -1,26 +1,17 @@
 #!/bin/bash
 
 set -e -u -o pipefail
-
-if [[ $(id -u) != 0 ]]; then
-    gum style --faint "Elevating to run as root"
-    exec sudo "$0" "$@"
-fi
-
-# Flags parsing
 . /usr/local/lib/bash/shflags
+. /usr/local/lib/bash/tei-bash-lib
 
 DEFINE_string 'repo' '/home/deploy/teiserver-repo' 'Path to the repo to build' 'r'
-
-FLAGS_HELP="USAGE: $0 [flags]
+FLAGS_HELP="USAGE: $(basename $0) [flags]
 
 Builds the teiserver image from the specified repo and tags it as latest.
 "
 FLAGS "$@" || exit $?
+_tei_ensure_root "$@"
 eval set -- "${FLAGS_ARGV}"
-
-# Main script
-. /usr/local/lib/bash/tei-bash-lib
 
 REPO="$(realpath -e "${FLAGS_repo}")"
 if [[ ! -d "$REPO" ]]; then

@@ -1,31 +1,21 @@
 #!/bin/bash
 
 set -e -u -o pipefail
-
-if [[ $(id -u) != 0 ]]; then
-    gum style --faint "Elevating to run as root"
-    exec sudo "$0" "$@"
-fi
-
-# Flags parsing
 . /usr/local/lib/bash/shflags
+. /usr/local/lib/bash/tei-bash-lib
 
 DEFINE_string 'version' '' 'Version to tag, e.g. af99e8e1a9, latest' 'v'
 DEFINE_string 'tag' '' 'Name of the tag to apply' 't'
 DEFINE_boolean 'force' false 'Overwrite existing tag without prompting' 'f'
-
-FLAGS_HELP="USAGE: $0 [flags]
+FLAGS_HELP="USAGE: $(basename $0) [flags]
 
 Tag a teiserver release.
 "
 FLAGS "$@" || exit $?
+_tei_ensure_root "$@"
 eval set -- "${FLAGS_ARGV}"
 
-# Main script
-. /usr/local/lib/bash/tei-bash-lib
-
 cd $_TEI_INSTALL_DIR
-
 _tei_lock_deploy
 
 tag="${FLAGS_tag}"

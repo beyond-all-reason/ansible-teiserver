@@ -75,3 +75,10 @@ function _tei_lock_deploy {
     fi
     echo "$(logname):$$" > $_TEI_DEPLOY_LOCK
 }
+
+function _tei_ensure_root {
+    if [[ $(id -u) != 0 ]]; then
+        gum style --faint "Elevating to run as root"
+        exec sudo "$0" "$@"
+    fi
+}

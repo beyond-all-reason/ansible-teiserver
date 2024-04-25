@@ -1,36 +1,25 @@
 #!/bin/bash
 
 set -e -u -o pipefail
-
-if [[ $(id -u) != 0 ]]; then
-    gum style --faint "Elevating to run as root"
-    exec sudo "$0" "$@"
-fi
-
-# Flags parsing
 . /usr/local/lib/bash/shflags
+. /usr/local/lib/bash/tei-bash-lib
 
 DEFINE_integer 'days' 16 'Versions older then how many days to remove' 'd'
 DEFINE_boolean 'skip_confirmation' false 'Skip confirmation before removing' 'y'
 DEFINE_boolean 'dry_run' false 'Just print versions to delete and exit' 'n'
-
-FLAGS_HELP="USAGE: $0 [flags]
+FLAGS_HELP="USAGE: $(basename $0) [flags]
 
 Prune old teiserver releases. This script will delete all releases of the
 teiserver that are untagged and older then configured time.
 "
 FLAGS "$@" || exit $?
+_tei_ensure_root "$@"
 eval set -- "${FLAGS_ARGV}"
 
 if [[ $FLAGS_days -lt 0 ]]; then
     gum style --bold 'Days argument must be non-negative' >&2
     exit 1
 fi
-
-# Main script
-. /usr/local/lib/bash/tei-bash-lib
-
-cd $_TEI_INSTALL_DIR
 
 function versions_to_drop {
     local time="$1"
@@ -44,6 +33,7 @@ function versions_to_drop {
         | tr -d '"' | tr , ' ')
 }
 
+cd $_TEI_INSTALL_DIR
 _tei_lock_deploy
 
 TO_DROP="$(versions_to_drop "$(date -d "$FLAGS_days days ago" -u +"%Y-%m-%dT%H:%M:%SZ")")"
