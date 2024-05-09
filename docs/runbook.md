@@ -82,3 +82,69 @@ To speedup the migration of the database from one server to another, if we want 
       | ssh user@target-server \
          "zstdcat | sudo -i -u postgres pg_restore -d postgres --clean --create"
    ```
+
+## New host setup
+
+Currently, when we setup new servers, they are not yet provisioned via cloud-init, which means that a bunch of things are done manually and can differ between hosts. Maybe some of them should be moved to playbook too. For now we list the list of commands for copy pasting.
+
+### Create users
+
+Assuming one has the root account access, and there aren't any user account, the steps to create a new user are like:
+
+```
+NEW_USER={username}
+GITHUB_NAME={githubusername}
+adduser --disabled-password --gecos "" $NEW_USER
+usermod -a -G sudo $NEW_USER
+sudo -u $NEW_USER mkdir /home/$NEW_USER/.ssh
+sudo -u $NEW_USER chmod og-rwx /home/$NEW_USER/.ssh
+sudo -u $NEW_USER curl -L https://github.com/$GITHUB_NAME.keys > /home/$NEW_USER/.ssh/authorized_keys
+```
+
+This gives access to the server via ssh keys.
+
+#### Option 1: passwordless sudo
+
+Create group for users that can use sudo without pass and configure sudo:
+
+```
+addgroup --system passwordless
+cat > /etc/sudoers.d/91-passwordless <<EOF
+# Members or passwordless group don't require password for sudo
+%passwordless ALL=(ALL:ALL) NOPASSWD:ALL
+EOF
+```
+
+Then add users to it via:
+
+```
+usermod -a -G passwordless $NEW_USER
+```
+
+#### Option 2: Configure passwords
+
+Generate random password
+
+```
+dd status=none if=/dev/urandom bs=1 count=256 | sha256sum
+```
+
+Set the password for the user:
+
+```
+passwd $NEW_USER
+```
+
+And ask them to change it on the first login.
+
+### Harden SSH
+
+It's good to disable direct root login and password based login
+
+```
+cat > /etc/ssh/sshd_config.d/90-harden.conf <<EOF
+PermitRootLogin no
+PubkeyAuthentication yes
+PasswordAuthentication no
+EOF
+```
