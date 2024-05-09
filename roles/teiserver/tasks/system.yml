@@ -63,7 +63,6 @@
   ansible.builtin.file:
     path: /etc/systemd/system/podman-auto-update.service.d
     state: directory
-    recurse: true
     mode: '0755'
 - name: Create podman-auto-update.service.d/01-longer-prune.conf
   ansible.builtin.copy:
