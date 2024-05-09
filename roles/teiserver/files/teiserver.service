@@ -9,6 +9,7 @@ BindsTo=postgresql@15-main.service
 
 [Service]
 User=teiserver
+EnvironmentFile=/etc/teiserver/teiserver.env
 ExecStart=/opt/teiserver/live/bin/teiserver start
 Restart=on-failure
 LimitNOFILE=65536
