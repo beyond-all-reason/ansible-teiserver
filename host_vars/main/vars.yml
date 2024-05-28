@@ -1,0 +1,24 @@
+---
+domain_name: server4.beyondallreason.info
+database_password: '{{ vault_database_password }}'
+teiserver_setup_key: '{{ vault_teiserver_setup_key }}'
+teiserver_guardian_secret: '{{ vault_teiserver_guardian_secret }}'
+teiserver_secret_key_base: '{{ vault_teiserver_secret_key_base }}'
+
+backup_path: /var/backups/teiserver
+backup_rclone_config: |
+  [backup]
+  type = local
+backup_decay_enabled: true
+backup_decay: '1d2h@2d 7d2h@7d 0@60d'
+
+teiserver_discord_integration: true
+teiserver_discord_bot_token: '{{ vault_teiserver_discord_bot_token }}'
+teiserver_discord_bot_name: '{{ vault_teiserver_discord_bot_name }}'
+teiserver_discord_server_id: '{{ vault_teiserver_discord_server_id }}'
+
+teiserver_email_integration: true
+teiserver_smtp_server: '{{ vault_teiserver_smtp_server }}'
+teiserver_smtp_port: '{{ vault_teiserver_smtp_port }}'
+teiserver_smtp_username: '{{ vault_teiserver_smtp_username }}'
+teiserver_smtp_password: '{{ vault_teiserver_smtp_password }}'
