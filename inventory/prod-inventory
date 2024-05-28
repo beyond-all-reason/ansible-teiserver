@@ -1,5 +1,5 @@
 integration ansible_host=server5.beyondallreason.info
-main ansible_host=0.0.0.0
+main ansible_host=server4.beyondallreason.info
 
 [prod]
 integration
