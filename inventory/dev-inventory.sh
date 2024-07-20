@@ -1,25 +1,21 @@
 #!/bin/bash
 
-# Simple dynamic inventory script that resolves the IP of the test teiserver LXD container
+# Simple dynamic inventory script that resolves the IP of the test teiserver Incus container
 
-SUDO=
-if ! id -nG | grep -qw lxd
+EMPTY_CONFIG='{"_meta": {"hostvars": {}}}'
+
+if [ ! -f .incus-integration-on ]
 then
-    SUDO=sudo
+  echo $EMPTY_CONFIG
+  exit
 fi
 
-IP=$(command -v lxc &> /dev/null && $SUDO lxc list -f csv -c 4 teiserver-test | grep -E 'eth|enp' | cut -d' ' -f1)
+IP=$(command -v incus &> /dev/null && incus list -f csv -c 4 teiserver-test | grep -E 'eth|enp' | cut -d' ' -f1)
 
-# For the case when used doen't have lxc installed at all or the container is not running
+# For the case when used doen't have Incus installed at all or the container is not running
 if [[ -z "$IP" ]]
 then
-cat <<EOF
-{
-    "_meta": {
-        "hostvars": {}
-    }
-}
-EOF
+  echo $EMPTY_CONFIG
 else
 cat <<EOF
 {

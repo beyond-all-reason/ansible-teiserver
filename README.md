@@ -96,12 +96,15 @@ marek@teiserver-test:~/teiserver$ tei-rel-deploy
 
 ### Setup
 
-We use LXD for local testing. Make sure you have it installed and initialized [following the docs](https://documentation.ubuntu.com/lxd/en/latest/). For example for Debian, it's as simple as `sudo apt install lxd && sudo lxd init`.
+We use Incus for local testing. Make sure you have it installed and initialized following [the official getting started docs](https://linuxcontainers.org/incus/docs/main/tutorial/first_steps/).
 
 To create a new container and initialize it via cloud-init, run the following command:
 
 ```
-sudo lxc launch images:debian/bookworm/cloud teiserver-test < test.lxc.yml && sudo lxc exec teiserver-test -- cloud-init status --wait
+touch .incus-integration-on && \
+chmod 0600 test.ssh.key && \
+incus launch images:debian/bookworm/cloud teiserver-test < test.incus.yml && \
+incus exec teiserver-test -- cloud-init status --wait
 ```
 
 Then test that it works for ansible:
@@ -118,24 +121,38 @@ Now you can use all the playbooks and roles as usual, just make sure you are tar
 ansible-playbook -l dev play.yml
 ```
 
-To enter into container shell, run the following command:
-
-```
-sudo lxc exec teiserver-test -- /bin/bash
-```
-
-You can also ssh into it with something like:
+You can ssh into it with something like:
 
 ```
 ssh -i test.ssh.key ansible@$(ansible-inventory --host test | jq -r '.ansible_host')
 ```
+
+Or enter directly into root container shell with:
+
+```
+incus exec teiserver-test -- /bin/bash
+```
+### Teiserver setup
+
+Before you can actually use the local Teiserver, you will need to build and deploy it, and setup the root account.
+
+1. Run the playbook as described in the previous section
+2. SSH into the container with command from previous section
+3. Build and deploy the Teiserver:
+
+   ```
+   tei-rel-build
+   tei-rel-deploy
+   ```
+4. Get the container ip e.g. by just running `ip addr` in the container.
+5. Open in the browser `https://{container_ip}/initial_setup/abcdefg` to setup a `root@localhost` account with password `abcdefg`. Note: it has to be `abcdefg` as it's hardcoded in the playbook for local testing.
 
 ### Cleanup
 
 To stop and remove the container:
 
 ```
-sudo lxc stop teiserver-test && sudo lxc delete teiserver-test
+incus stop teiserver-test && incus delete teiserver-test
 ```
 
 ## External dependencies
