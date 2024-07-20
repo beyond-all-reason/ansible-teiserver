@@ -5,11 +5,9 @@ teiserver_setup_key: '{{ vault_teiserver_setup_key }}'
 teiserver_guardian_secret: '{{ vault_teiserver_guardian_secret }}'
 teiserver_secret_key_base: '{{ vault_teiserver_secret_key_base }}'
 
-backup_path: /var/backups/teiserver
-backup_rclone_config: |
-  [backup]
-  type = local
-backup_decay_enabled: true
+backup_path: '{{ vault_backup_path }}'
+backup_rclone_config: '{{ vault_backup_rclone_config }}'
+backup_decay_enabled: false
 backup_decay: '1d2h@2d 7d2h@7d 0@60d'
 
 teiserver_discord_integration: true
