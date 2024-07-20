@@ -10,7 +10,7 @@ backup_rclone_config: |
   [backup]
   type = local
 backup_decay_enabled: true
-backup_decay: '1d1h@2d 0@7d'
+backup_decay: '1d1h@1d 0@3d'
 
 teiserver_discord_integration: true
 teiserver_discord_bot_token: '{{ vault_teiserver_discord_bot_token }}'
