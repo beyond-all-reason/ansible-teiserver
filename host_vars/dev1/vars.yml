@@ -1,0 +1,20 @@
+---
+domain_name: lobby-server-dev.beyondallreason.dev
+
+fontawesome_url: https://use.fontawesome.com/releases/v6.5.1/fontawesome-free-6.5.1-web.zip
+fontawesome_checksum: 'sha256:a84cbf6d35590400f403171aad9cfedd662c970ea5ab41cea32f272c12b7d0ce'
+
+database_password: '{{ vault_database_password }}'
+teiserver_setup_key: '{{ vault_teiserver_setup_key }}'
+teiserver_guardian_secret: '{{ vault_teiserver_guardian_secret }}'
+teiserver_secret_key_base: '{{ vault_teiserver_secret_key_base }}'
+
+backup_path: /var/backups/teiserver
+backup_rclone_config: |
+  [backup]
+  type = local
+backup_decay_enabled: true
+backup_decay: '1d1h@1d 0@3d'
+
+teiserver_discord_integration: false
+teiserver_email_integration: false
