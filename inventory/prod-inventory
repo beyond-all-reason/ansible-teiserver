@@ -1,6 +1,8 @@
 integration ansible_host=server5.beyondallreason.info
 main ansible_host=server4.beyondallreason.info
+dev1 ansible_host=lobby-server-dev.beyondallreason.dev
 
 [prod]
 integration
 main
+dev1
