@@ -6,9 +6,7 @@ teiserver_guardian_secret: '{{ vault_teiserver_guardian_secret }}'
 teiserver_secret_key_base: '{{ vault_teiserver_secret_key_base }}'
 
 backup_path: /var/backups/teiserver
-backup_rclone_config: |
-  [backup]
-  type = local
+backup_rclone_config: '{{ vault_backup_rclone_config }}'
 backup_decay_enabled: true
 backup_decay: '1d1h@1d 0@3d'
 
