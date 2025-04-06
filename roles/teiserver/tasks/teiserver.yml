@@ -52,7 +52,9 @@
       ansible.builtin.template:
         src: prod.secret.exs.j2
         dest: /home/deploy/prod-data/prod.secret.exs
-        mode: '0644'
+        owner: deploy
+        group: sudo
+        mode: '0640'
       register: prod_secret_file
     - name: Write vm.args file
       ansible.builtin.copy:

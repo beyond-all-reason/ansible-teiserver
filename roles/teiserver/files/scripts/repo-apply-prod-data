@@ -29,6 +29,7 @@ set -x
 
 # Prod secrets
 cp "$PROD_DATA/prod.secret.exs" "$TARGET_DIR/config/prod.secret.exs"
+chmod og-rwx "$TARGET_DIR/config/prod.secret.exs"
 
 # Release vm args
 mkdir -p "$TARGET_DIR/rel"
