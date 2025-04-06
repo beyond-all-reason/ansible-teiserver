@@ -1,0 +1,31 @@
+---
+- name: Run Zabbix apt repo
+  ansible.builtin.apt:
+    deb: " {{ zabbix_repo_url }}"
+  register: zabbix_repo
+- name: Run "apt update"
+  ansible.builtin.apt:
+    update_cache: yes
+  when: zabbix_repo.changed
+- name: Install Zabbix agent
+  ansible.builtin.package:
+    pkg: zabbix-agent2
+- name: Copy Zabbix agent conf
+  ansible.builtin.template:
+    src: "zabbix_agent.conf.j2"
+    dest: "/etc/zabbix/zabbix_agent2.d/main.conf"
+  register: zabbix_config
+- name: Copy Zabbix psk
+  ansible.builtin.copy:
+    content: "{{ zabbix_psk }}"
+    dest: "/etc/zabbix/main.psk"
+    group: zabbix
+    mode: '0640'
+  no_log: true
+  diff: false
+- name: Start and enable Zabbix agent
+  ansible.builtin.systemd:
+    name: zabbix-agent2
+    state: restarted
+    enabled: true
+  when: zabbix_config.changed

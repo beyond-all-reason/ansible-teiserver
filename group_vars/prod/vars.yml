@@ -5,3 +5,6 @@ acme_server: https://acme-v02.api.letsencrypt.org/directory
 acme_agreement_url: https://letsencrypt.org/documents/LE-SA-v1.4-April-3-2024.pdf
 fontawesome_url: '{{ vault_fontawesome_url }}'
 fontawesome_checksum: '{{ vault_fontawesome_checksum }}'
+configure_zabbix_agent: true
+zabbix_psk: '{{ vault_zabbix_psk }}'
+zabbix_server: 192.3.148.174
