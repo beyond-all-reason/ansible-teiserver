@@ -21,7 +21,7 @@
     privs: ALL
 - name: Custom HBA rules
   community.postgresql.postgresql_pg_hba:
-    dest: /etc/postgresql/15/main/pg_hba.conf
+    dest: /etc/postgresql/17/main/pg_hba.conf
     rules:
       - contype: local
         databases: '{{ database_name }}'
@@ -36,7 +36,7 @@
   register: pg_shared_preload_libraries
 - name: Restart postgresql
   ansible.builtin.systemd:
-    name: postgresql@15-main.service
+    name: postgresql@17-main.service
     state: restarted
   when: pg_shared_preload_libraries.changed and not teiserver_running
   become_user: root
@@ -54,7 +54,7 @@
   register: pstune
 - name: Restart postgresql
   ansible.builtin.systemd:
-    name: postgresql@15-main.service
+    name: postgresql@17-main.service
     state: restarted
   become_user: root
   when: pstune.results | selectattr('changed') | map(attribute='restart_required') is any and not teiserver_running

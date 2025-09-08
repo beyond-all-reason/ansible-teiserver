@@ -103,7 +103,7 @@ To create a new container and initialize it via cloud-init, run the following co
 ```
 touch .incus-integration-on && \
 chmod 0600 test.ssh.key && \
-incus launch images:debian/bookworm/cloud teiserver-test < test.incus.yml && \
+incus launch images:debian/trixie/cloud teiserver-test < test.incus.yml && \
 incus exec teiserver-test -- cloud-init status --wait
 ```
 

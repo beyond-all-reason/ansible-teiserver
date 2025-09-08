@@ -16,6 +16,7 @@
       - geoip-bin
       - git
       - grc
+      - gum
       - htop
       - jq
       - lz4
@@ -24,7 +25,7 @@
       - nginx
       - podman
       - podman-docker
-      - postgresql-15
+      - postgresql-17
       - python3-psycopg2  # for ansible postgresql
       - rclone  # for backups
       - ssl-cert  # self-signed cert for testing
@@ -36,9 +37,6 @@
       - xz-utils
       - zstd
     state: present
-- name: Install gum
-  ansible.builtin.apt:
-    deb: https://github.com/charmbracelet/gum/releases/download/v0.13.0/gum_0.13.0_amd64.deb
 - name: Add deploy user
   ansible.builtin.user:
     name: deploy
@@ -54,11 +52,17 @@
     dest: /etc/sudoers.d/90-deploy-user
     mode: '0440'
 - name: Make sure podman resolves docker.io correctly wihout prefix
-  ansible.builtin.lineinfile:
-    path: /etc/containers/registries.conf
-    regexp: '^unqualified-search-registries '
-    insertafter: '^# unqualified-search-registries'
-    line: "unqualified-search-registries = ['docker.io']"
+  ansible.builtin.copy:
+    dest: /etc/containers/registries.conf.d/unqualified-search.conf
+    content: |
+      unqualified-search-registries = ['docker.io']
+- name: Make sure podman network works well with ufw
+  ansible.builtin.copy:
+    dest: /etc/containers/containers.conf
+    content: |
+      [network]
+      # We set iptables driver so it plays well with ufw that also uses iptables
+      firewall_driver = "iptables"
 - name: Create podman-auto-update.service.d directory
   ansible.builtin.file:
     path: /etc/systemd/system/podman-auto-update.service.d
