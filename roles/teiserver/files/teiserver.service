@@ -1,11 +1,11 @@
 [Unit]
 Description=Teiserver Elixir Application
 After=network.target
-After=postgresql@15-main.service
+After=postgresql@17-main.service
 # BindsTo means that when postgresql is stopped or restarted, so is teiserver.
 # We make it a strong dependency like this because behavior of teiserver can
 # get weird when postgresql gets restarted while teiserver is running.
-BindsTo=postgresql@15-main.service
+BindsTo=postgresql@17-main.service
 
 [Service]
 User=teiserver
