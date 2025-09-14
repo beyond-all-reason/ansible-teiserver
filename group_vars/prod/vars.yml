@@ -8,3 +8,4 @@ fontawesome_checksum: '{{ vault_fontawesome_checksum }}'
 configure_zabbix_agent: true
 zabbix_psk: '{{ vault_zabbix_psk }}'
 zabbix_server: 192.3.148.174
+kicker_github_users: '{{ vault_kicker_github_users }}'

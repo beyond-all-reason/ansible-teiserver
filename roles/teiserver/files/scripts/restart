@@ -1,0 +1,28 @@
+#!/bin/bash
+
+set -e -u -o pipefail
+. /usr/local/lib/bash/shflags
+. /usr/local/lib/bash/tei-bash-lib
+
+FLAGS_HELP="USAGE: $(basename $0)
+
+Restart teiserver.
+"
+FLAGS "$@" || exit $?
+_tei_ensure_root "$@"
+eval set -- "${FLAGS_ARGV}"
+
+SYSTEMD_COLORS=true systemctl status teiserver --lines=0 --no-pager | grep -E 'Teiserver|Active:|Memory:'
+echo
+
+ACTOR="${KICKER_USER:-$(logname)}"
+
+if ! gum confirm "$ACTOR, are you sure you want to restart teiserver?"; then
+    gum style --bold "Restart aborted"
+    exit 0
+fi
+
+logger -t tei-restart "Restart triggered by $ACTOR"
+
+gum spin --title "Restarting teiserver..." -- systemctl restart teiserver
+gum style --bold "Done"

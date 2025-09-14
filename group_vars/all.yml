@@ -1,3 +1,4 @@
 database_name: teiserver_prod
 database_user: teiserver_prod
 zabbix_repo_url: "https://repo.zabbix.com/zabbix/7.4/release/debian/pool/main/z/zabbix-release/zabbix-release_latest_7.4+debian13_all.deb"
+kicker_github_users: []

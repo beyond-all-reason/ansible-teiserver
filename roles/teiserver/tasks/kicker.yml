@@ -1,0 +1,44 @@
+---
+- name: Add kicker user
+  ansible.builtin.user:
+    name: kicker
+    shell: /bin/bash
+    create_home: true
+- name: Allow kicker restart teiserver
+  ansible.builtin.copy:
+    dest: /etc/sudoers.d/92-kicker
+    content: |
+      Defaults:kicker env_keep += "KICKER_USER"
+      kicker ALL=(root) NOPASSWD: /usr/local/bin/tei-restart ""
+    mode: 0440
+- name: Create .ssh directory for kicker
+  ansible.builtin.file:
+    path: /home/kicker/.ssh
+    state: directory
+    owner: kicker
+    group: kicker
+    mode: '0700'
+- name: Install script to update kicker keys
+  ansible.builtin.template:
+    src: update-kicker-keys.sh.j2
+    dest: /usr/local/bin/update-kicker-keys.sh
+    mode: '0755'
+  register: update_kicker
+- name: Install kicker key update service
+  ansible.builtin.copy:
+    src: '{{ item }}'
+    dest: '/etc/systemd/system/{{ item }}'
+    mode: '0644'
+  loop:
+    - update-kicker-keys.service
+    - update-kicker-keys.timer
+- name: Enable and start kicker key update timer
+  ansible.builtin.systemd:
+    name: update-kicker-keys.timer
+    enabled: true
+    state: started
+    daemon_reload: true
+- name: Trigger initial key update
+  ansible.builtin.command:
+    cmd: /usr/local/bin/update-kicker-keys.sh
+  when: kicker_github_users | length > 0 and update_kicker.changed

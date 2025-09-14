@@ -30,6 +30,7 @@
     - rel-untag
     - repo-apply-prod-data
     - repo-pull
+    - restart
 - name: Setup teiserver source and configs
   become_user: deploy
   block:

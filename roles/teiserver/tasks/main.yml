@@ -29,3 +29,6 @@
   ansible.builtin.import_tasks: zabbix.yml
   tags: zabbix
   when: configure_zabbix_agent
+- name: Configure server kicker
+  ansible.builtin.import_tasks: kicker.yml
+  tags: kicker

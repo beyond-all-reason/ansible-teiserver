@@ -1,0 +1,25 @@
+#!/bin/bash
+set -euo pipefail
+
+USERS=( {{ kicker_github_users | join(" ") }} )
+
+TMPDIR=$(mktemp -d)
+trap 'rm -rf -- "$TMPDIR"' EXIT
+
+for user in "${USERS[@]}"; do
+    if ! curl -fsSL "https://github.com/${user}.keys" > "$TMPDIR/${user}.keys"; then
+        echo "Failed to fetch keys for ${user}" >&2
+        continue
+    fi
+
+    # Use awk to prepend the environment and command restriction with the username
+    awk -v user="$user" '{print "restrict,command=\"KICKER_USER=" user " sudo /usr/local/bin/tei-restart\",pty " $0}' "$TMPDIR/${user}.keys" >> "$TMPDIR/authorized_keys_final"
+done
+
+if [ ! -s "$TMPDIR/authorized_keys_final" ]; then
+    echo "No keys found, not updating." >&2
+    exit 0
+fi
+
+# Atomically replace the file
+install -o kicker -g kicker -m 0600 "$TMPDIR/authorized_keys_final" /home/kicker/.ssh/authorized_keys
