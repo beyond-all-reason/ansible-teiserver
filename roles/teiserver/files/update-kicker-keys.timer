@@ -3,8 +3,8 @@ Description=Run update-kicker-keys.service periodically
 
 [Timer]
 OnBootSec=5min
-OnUnitActiveSec=4h
-RandomizedDelaySec=1h
+OnUnitActiveSec=30m
+RandomizedDelaySec=2m
 
 [Install]
 WantedBy=timers.target
