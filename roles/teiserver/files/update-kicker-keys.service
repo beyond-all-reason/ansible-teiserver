@@ -2,5 +2,4 @@
 Description=Update SSH authorized keys for kicker user
 
 [Service]
-Type=oneshot
 ExecStart=/usr/local/bin/update-kicker-keys.sh
