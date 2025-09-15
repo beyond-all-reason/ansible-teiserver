@@ -11,6 +11,13 @@
       Defaults:kicker env_keep += "KICKER_USER"
       kicker ALL=(root) NOPASSWD: /usr/local/bin/tei-restart ""
     mode: 0440
+- name: Decline password auth for kicker
+  ansible.builtin.copy:
+    dest: /etc/ssh/sshd_config.d/92-kicker.conf
+    content: |
+      Match User kicker
+          PasswordAuthentication no
+    mode: 0644
 - name: Create .ssh directory for kicker
   ansible.builtin.file:
     path: /home/kicker/.ssh
