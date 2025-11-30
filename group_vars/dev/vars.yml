@@ -5,3 +5,4 @@ acme_agreement_url: https://letsencrypt.org/documents/LE-SA-v1.3-September-21-20
 fontawesome_url: https://use.fontawesome.com/releases/v6.5.1/fontawesome-free-6.5.1-web.zip
 fontawesome_checksum: 'sha256:a84cbf6d35590400f403171aad9cfedd662c970ea5ab41cea32f272c12b7d0ce'
 configure_zabbix_agent: false
+configure_monitoring: false

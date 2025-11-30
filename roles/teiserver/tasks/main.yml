@@ -32,3 +32,7 @@
 - name: Configure server kicker
   ansible.builtin.import_tasks: kicker.yml
   tags: kicker
+- name: Configure monitoring
+  ansible.builtin.import_tasks: monitoring.yml
+  tags: monitoring
+  when: configure_monitoring

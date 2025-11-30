@@ -1,0 +1,14 @@
+---
+- name: Attach client montoring
+  ansible.builtin.import_role:
+    name: beyondallreason.monitoring.client
+  vars:
+    monitoring_scrape_configs:
+      01_teiserver:
+        - job_name: teiserver
+          static_configs:
+            - targets:
+                - 127.0.0.1:4001
+          relabel_configs:
+            - target_label: instance
+              replacement: "{{ inventory_hostname }}"

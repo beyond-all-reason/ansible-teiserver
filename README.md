@@ -10,6 +10,16 @@ If you are trying to set up and test things locally and you don't have access to
 
 ### Playbook
 
+#### Dependencies
+
+Make sure required collections are installed by running:
+
+```
+ansible-galaxy collection install -r requirements.yml
+```
+
+If you pull repo and there are changes to that fille, you need to rerun the command to make sure you pick up latest changes.
+
 #### Vault
 
 When running against the prod instances, secrets are stored in files encrypted with ansible-vault, for example [group_vars/prod/vault.yml](group_vars/prod/vault.yml). Check out [the official guide](https://docs.ansible.com/ansible/latest/vault_guide/vault_encrypting_content.html#encrypting-files-with-ansible-vault) for how to view and edit them.
@@ -158,6 +168,16 @@ incus stop teiserver-test && incus delete teiserver-test
 ## External dependencies
 
 Teiserver has a few external dependencies that are not managed by this playbook. Here we document what those are and how to configure them e.g. for local testing.
+
+### Monitoring host
+
+To configure sending metrics to local monitoring host set up with [ansible-monitoring](https://github.com/beyond-all-reason/ansible-monitoring) playbook, run:
+
+```
+MON_HOST_IP=$(incus list -f csv -c 4 bar-mon-test | grep -E 'eth|enp' | cut -d' ' -f1)
+ansible-playbook -l test play.yml --diff -t monitoring \
+  -e "{ configure_monitoring: true, monitoring_metrics_write_host_ip: $MON_HOST_IP }"
+```
 
 ### Email
 
