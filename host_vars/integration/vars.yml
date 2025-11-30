@@ -1,5 +1,7 @@
 ---
 domain_name: server5.beyondallreason.info
+force_hostname: spads-eu7
+
 database_password: '{{ vault_database_password }}'
 teiserver_setup_key: '{{ vault_teiserver_setup_key }}'
 teiserver_guardian_secret: '{{ vault_teiserver_guardian_secret }}'
