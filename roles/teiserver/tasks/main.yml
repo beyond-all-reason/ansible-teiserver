@@ -19,6 +19,7 @@
 - name: Configure backups
   ansible.builtin.import_tasks: backup.yml
   tags: backup
+  when: backups_enabled | default(True)
 - name: Configure teiserver
   ansible.builtin.import_tasks: teiserver.yml
   tags: teiserver

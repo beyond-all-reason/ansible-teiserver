@@ -129,12 +129,14 @@
     - tei-warm-build.timer
     - tei-rel-prune-old.service
     - tei-rel-prune-old.timer
-- name: Enable teiserver maintenance timers
+- name: Enable teiserver release pruner timer
   ansible.builtin.systemd:
-    name: '{{ item }}'
+    name: tei-rel-prune-old.timer
     state: started
     enabled: true
     daemon_reload: true
-  loop:
-    - tei-warm-build.timer
-    - tei-rel-prune-old.timer
+- name: Toggle teiserver release build warmer
+  ansible.builtin.systemd:
+    name: tei-warm-build.timer
+    state: '{{ teiserver_build_warmer | default(True) | ternary("started", "stopped") }}'
+    enabled: '{{ teiserver_build_warmer | default(True) }}'
