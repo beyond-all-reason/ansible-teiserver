@@ -18,7 +18,7 @@ Make sure required collections are installed by running:
 ansible-galaxy collection install -r requirements.yml
 ```
 
-If you pull repo and there are changes to that fille, you need to rerun the command to make sure you pick up latest changes.
+If you pull repo and there are changes to that file, you need to rerun the command to make sure you pick up latest changes.
 
 #### Vault
 
