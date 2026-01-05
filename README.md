@@ -55,7 +55,6 @@ ansible-playbook -l main play.yml --tags database,teiserver
 The playbook will setup the server with:
 
 - `deploy` user for building and deploying the Teiserver from the main branch
-- `/home/deploy/prod-data` for out-of-source production configs and data like `prod.secret.exs` managed fully by the playbook
 - `/home/deploy/teiserver-repo` checkout of the Teiserver repository
 - `teiserver` systemd service for running the Teiserver
 - A set of `tei-*` scripts for managing the deployments.
@@ -92,8 +91,6 @@ The example session for on the users could look like:
 # Clone the teiserver repo
 marek@teiserver-test:~$ git clone https://github.com/beyond-all-reason/teiserver.git
 marek@teiserver-test:~$ cd teiserver
-# Apply the production config to the local checkout
-marek@teiserver-test:~/teiserver$ tei-repo-apply-prod-data .
 # Do whatever code changes needed
 # (...)
 # Build the local checkout into new release

@@ -19,11 +19,6 @@ if [[ ! -d "$REPO" ]]; then
   exit 1
 fi
 
-if [[ ! -f "$REPO/config/prod.secret.exs" ]]; then
-  gum style --bold "Repo $REPO does not contain config/prod.secret.exs, did you forget to run tei-repo-apply-prod-data?"
-  exit 1
-fi
-
 REPO_COMMIT=$(git -C "$REPO" rev-parse HEAD)
 if output=$(git -C "$REPO" status --porcelain) && [ -z "$output" ]; then
   REPO_DIRTY=false
@@ -32,7 +27,7 @@ else
 fi
 
 IMAGE_ID_FILE="$(mktemp)"
-podman build --iidfile "$IMAGE_ID_FILE" -f /home/deploy/teiserver.Dockerfile "$REPO"
+podman build --iidfile "$IMAGE_ID_FILE" -f "${REPO}/Dockerfile" "$REPO"
 IMAGE_ID=$(cat "$IMAGE_ID_FILE" | cut -d: -f2)
 rm "$IMAGE_ID_FILE"
 
