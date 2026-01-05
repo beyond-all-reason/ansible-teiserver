@@ -27,7 +27,7 @@ else
 fi
 
 IMAGE_ID_FILE="$(mktemp)"
-podman build --iidfile "$IMAGE_ID_FILE" -f "${REPO}/Dockerfile" "$REPO"
+podman build --iidfile "$IMAGE_ID_FILE" "$REPO"
 IMAGE_ID=$(cat "$IMAGE_ID_FILE" | cut -d: -f2)
 rm "$IMAGE_ID_FILE"
 
