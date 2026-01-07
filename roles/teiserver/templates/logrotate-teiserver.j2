@@ -1,0 +1,13 @@
+# Rotation for Teiserver logs
+
+/var/log/teiserver/*.log {
+    weekly              # rotate once per week
+    weekday 3           # prefer rotation on Wednesday (0=Sunday ... 6=Saturday)
+    rotate 4            # keep 4 weeks of logs
+    missingok           # don't complain if no logs yet
+    notifempty          # don't rotate empty logs
+    compress            # gzip old logs
+    delaycompress       # compress from the second-oldest onward
+    copytruncate        # truncate the existing file after copying (safer for apps that keep file handles open)
+    create 0640 teiserver teiserver   # permissions & owner for new log files
+}

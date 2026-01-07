@@ -56,6 +56,16 @@
     group: teiserver
     mode: '0755'
     state: directory
+- name: Deploy logrotate configuration
+  template:
+    src: logrotate-teiserver.j2
+    dest: /etc/logrotate.d/teiserver
+    owner: root
+    group: root
+    mode: '0644'
+  # Putting tag here so it can be debugged better. Can be removed if needed.
+  tags:
+    - logrotate
 - name: Create teiserver config directory
   ansible.builtin.file:
     path: /etc/teiserver
