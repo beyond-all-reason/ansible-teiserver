@@ -56,6 +56,33 @@
     group: teiserver
     mode: '0755'
     state: directory
+- name: Deploy logrotate configuration
+  ansible.builtin.template:
+    src: logrotate-teiserver.j2
+    dest: /etc/logrotate.d/teiserver
+    owner: root
+    group: root
+    mode: '0644'
+  tags:
+    - logrotate
+- name: Copy logrotate systemd units
+  ansible.builtin.copy:
+    src: '{{ item }}'
+    dest: '/etc/systemd/system/{{ item }}'
+    mode: '0644'
+  loop:
+    - logrotate-teiserver.service
+    - logrotate-teiserver.timer
+  tags:
+    - logrotate
+- name: Enable logrotate timer for Wednesday rotation
+  ansible.builtin.systemd:
+    name: logrotate-teiserver.timer
+    state: started
+    enabled: true
+    daemon_reload: true
+  tags:
+    - logrotate
 - name: Create teiserver config directory
   ansible.builtin.file:
     path: /etc/teiserver

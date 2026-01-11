@@ -1,0 +1,21 @@
+# Rotation for Teiserver logs
+#
+# Rotation is triggered weekly on Wednesday at 3:00 AM by
+# logrotate-teiserver.timer (systemd timer unit)
+
+/var/log/teiserver/*.log {
+    # keep 4 weeks of logs
+    rotate 4
+    # don't complain if no logs yet
+    missingok
+    # don't rotate empty logs
+    notifempty
+    # gzip old logs
+    compress
+    # compress from the second-oldest onward
+    delaycompress
+    # truncate the existing file after copying (safer for apps that keep file handles open)
+    copytruncate
+    # permissions & owner for new log files
+    create 0640 teiserver teiserver
+}
