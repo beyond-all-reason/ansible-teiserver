@@ -28,6 +28,7 @@
       - postgresql-17
       - python3-psycopg2  # for ansible postgresql
       - rclone  # for backups
+      - slirp4netns  # for rootless networking in unprivileged testing containers
       - ssl-cert  # self-signed cert for testing
       - tcpdump
       - tmux
@@ -61,6 +62,7 @@
     dest: /etc/containers/containers.conf
     content: |
       [network]
+      default_rootless_network_cmd = "slirp4netns"
       # We set iptables driver so it plays well with ufw that also uses iptables
       firewall_driver = "iptables"
 - name: Create podman-auto-update.service.d directory
