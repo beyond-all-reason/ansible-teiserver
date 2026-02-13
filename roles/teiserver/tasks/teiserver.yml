@@ -65,24 +65,6 @@
     mode: '0644'
   tags:
     - logrotate
-- name: Copy logrotate systemd units
-  ansible.builtin.copy:
-    src: '{{ item }}'
-    dest: '/etc/systemd/system/{{ item }}'
-    mode: '0644'
-  loop:
-    - logrotate-teiserver.service
-    - logrotate-teiserver.timer
-  tags:
-    - logrotate
-- name: Enable logrotate timer for Wednesday rotation
-  ansible.builtin.systemd:
-    name: logrotate-teiserver.timer
-    state: started
-    enabled: true
-    daemon_reload: true
-  tags:
-    - logrotate
 - name: Create teiserver config directory
   ansible.builtin.file:
     path: /etc/teiserver
