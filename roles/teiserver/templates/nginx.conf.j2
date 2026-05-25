@@ -21,6 +21,7 @@ http {
 	tcp_nopush on;
 	types_hash_max_size 2048;
 	server_tokens off;
+	resolver 127.0.0.53;  # systemd-resolved, needed for domain resolution
 
 	include /etc/nginx/mime.types;
 	default_type application/octet-stream;
@@ -80,6 +81,15 @@ http {
 
 		location = /favicon.ico {
 			alias /var/www/teiserver/favicon.ico;
+		}
+
+		location /dex/ {
+			# force domain resolution at runtime not startup
+			set $dex dex.dns.podman;
+			proxy_pass http://$dex:5556;
+			proxy_redirect off;
+			proxy_http_version 1.1;
+			include proxy_params;
 		}
 
 		location / {

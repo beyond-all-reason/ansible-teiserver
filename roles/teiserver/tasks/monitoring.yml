@@ -12,3 +12,11 @@
           relabel_configs:
             - target_label: instance
               replacement: "{{ inventory_hostname }}"
+      01_dex:
+        - job_name: dex
+          static_configs:
+            - targets:
+                - dex.dns.podman:5558
+          relabel_configs:
+            - target_label: instance
+              replacement: "{{ ansible_hostname }}"

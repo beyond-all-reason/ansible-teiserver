@@ -20,3 +20,7 @@ teiserver_smtp_server: '{{ vault_teiserver_smtp_server }}'
 teiserver_smtp_port: '{{ vault_teiserver_smtp_port }}'
 teiserver_smtp_username: '{{ vault_teiserver_smtp_username }}'
 teiserver_smtp_password: '{{ vault_teiserver_smtp_password }}'
+
+dex_static_clients: '{{ vault_dex_static_clients }}'
+dex_teiserver_client_id: 'dex'
+dex_teiserver_client_secret: '{{ vault_dex_teiserver_client_secret }}'

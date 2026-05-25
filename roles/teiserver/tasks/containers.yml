@@ -1,0 +1,53 @@
+---
+# Dex
+- name: Compute Dex OAuth client secret names
+  ansible.builtin.set_fact:
+    dex_oauth_secret_names: "{{ dex_static_clients | map(attribute='id') | map('regex_replace', '^(.*)$', 'oauth_\\1_client_secret') | list }}"
+- name: Create dex config directory
+  ansible.builtin.file:
+    path: /opt/dex/config
+    state: directory
+    mode: "0755"
+- name: Write dex config
+  ansible.builtin.template:
+    src: dex.config.yaml.j2
+    dest: /opt/dex/config/config.docker.yaml
+    mode: "0644"
+  notify: Restart Dex
+- name: Create OAuth client secrets
+  containers.podman.podman_secret:
+    state: present
+    skip_existing: true
+    name: "{{ item }}"
+    data: "{{ lookup('ansible.builtin.password', '/dev/null', chars=['hexdigits'], length=32) }}"
+  loop: "{{ dex_oauth_secret_names }}"
+- name: Create teiserver client secret
+  containers.podman.podman_secret:
+    state: present
+    skip_existing: "{{ dex_teiserver_client_secret is not defined }}"
+    name: "teiserver_client_secret"
+    data: "{{ dex_teiserver_client_secret | default('not_set') }}"
+- name: Set up Dex container
+  containers.podman.podman_container:
+    name: dex
+    state: quadlet
+    image: docker.io/dexidp/dex:v2.45.1-distroless
+    volumes:
+      - "/opt/dex/config:/etc/dex:ro"
+      - "dex_data:/var/dex/:idmap"
+    network: priv.network
+    secrets: "{{ dex_oauth_secret_names + ['teiserver_client_secret'] }}"
+    quadlet_options:
+      - "AutoUpdate=registry"
+      - "Pull=newer"
+      - "UserNS=auto"
+      - |
+        [Install]
+        WantedBy=default.target
+  notify: Restart Dex
+- name: Start and enable Dex service
+  ansible.builtin.systemd_service:
+    name: dex.service
+    enabled: true
+    state: started
+    daemon_reload: true

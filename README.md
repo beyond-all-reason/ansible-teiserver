@@ -162,6 +162,23 @@ To stop and remove the container:
 incus stop teiserver-test && incus delete teiserver-test
 ```
 
+### Dex
+
+The playbook deploys [Dex](https://dexidp.io/) as an OIDC provider at `https://{domain_name}/dex`, using Teiserver itself as an upstream OAuth connector. Static clients can be declared via the `dex_static_clients` variable, their client secrets are generated automatically into podman secrets named `oauth_<id>_client_secret` and can be retrieved with:
+
+```
+sudo podman secret inspect oauth_<id>_client_secret --showsecret -f "{{ .SecretData }}"
+```
+
+Dex's connector back into Teiserver needs an OAuth application provisioned through the Teiserver web UI (Admin -> OAuth applications), since this cannot be automated. After creating it, update the secret and restart Dex:
+
+```
+printf "%s" '<secret from teiserver UI>' | sudo podman secret create --replace teiserver_client_secret -
+sudo systemctl restart dex
+```
+
+If the client ID is not the default `dex`, also set `dex_teiserver_client_id` and re-run the playbook.
+
 ## External dependencies
 
 Teiserver has a few external dependencies that are not managed by this playbook. Here we document what those are and how to configure them e.g. for local testing.
