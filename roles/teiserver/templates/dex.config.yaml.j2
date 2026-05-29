@@ -1,0 +1,61 @@
+issuer: "https://{{ domain_name }}/dex"
+
+web:
+  http: 0.0.0.0:5556
+
+telemetry:
+  http: 0.0.0.0:5558
+
+storage:
+  type: sqlite3
+  config:
+    file: /var/dex/dex.db
+
+oauth2:
+  grantTypes: ["authorization_code"]
+  responseTypes: ["code"]
+  skipApprovalScreen: true
+  alwaysShowLoginScreen: false
+
+staticClients:
+{% for c in dex_static_clients %}
+  - id: "{{ c.id }}"
+    secret: "{{ '{{ file.Read "/run/secrets/oauth_' ~ c.id ~ '_client_secret" }}' }}"
+    name: "{{ c.name }}"
+    redirectURIs:
+{% for uri in c.redirect_uris %}
+      - "{{ uri }}"
+{% endfor %}
+{% endfor %}
+
+connectors:
+- type: oauth
+  id: teiserver
+  name: teiserver
+  config:
+    clientID: "{{ dex_teiserver_client_id | default('dex') }}"
+    clientSecret: "{{ '{{ file.Read "/run/secrets/teiserver_client_secret" }}' }}"
+    redirectURI: "https://{{ domain_name }}/dex/callback"
+
+    tokenURL: "https://{{ domain_name }}/oauth/token"
+    authorizationURL: "https://{{ domain_name }}/oauth/authorize"
+    userInfoURL: "https://{{ domain_name }}/oauth/userinfo"
+
+    insecureSkipVerify: {{ acquire_tls_certificate | ternary('false', 'true') }}
+
+    scopes:
+      - profile
+      - email
+      - groups
+    userIDKey: sub
+
+{% if dex_local_user %}
+enablePasswordDB: true
+staticPasswords:
+  - email: "user@example.com"
+    # bcrypt hash of the string "91HbgnUz3vrVljtcTWpIrC7Jg0C1WKyJXplthLhbVUU=": $(echo password | htpasswd -BinC 10 admin | cut -d: -f2)
+    hash: "$2y$10$SjLQd8KI9JPo30urbre4leC6fyR0SBkNaKb0M5PYZx6QB.JOjuHvm"
+    username: "user"
+    groups: ["overwatch"]
+    userID: "cfd05c95-6531-4ee5-84c7-de1e0f8b3907"
+{% endif %}

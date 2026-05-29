@@ -63,6 +63,40 @@
       [network]
       # We set iptables driver so it plays well with ufw that also uses iptables
       firewall_driver = "iptables"
+- name: Configure uid/gid mapping ranges
+  ansible.builtin.lineinfile:
+    path: "{{ item }}"
+    regexp: "^containers:"
+    line: containers:10000000:10000000
+  loop:
+    - /etc/subgid
+    - /etc/subuid
+- name: Create Quadlet file for podman network
+  containers.podman.podman_network:
+    name: priv
+    state: quadlet
+    subnet: "10.89.0.0/24"
+    gateway: "10.89.0.1"
+    quadlet_options:
+      - Options=com.docker.network.bridge.name=podmanpriv
+- name: Create /etc/systemd/network
+  ansible.builtin.file:
+    path: /etc/systemd/network
+    state: directory
+    mode: "0755"
+- name: Configure DNS resolution of podman containers from host
+  ansible.builtin.copy:
+    dest: /etc/systemd/network/90-podmanpriv.network
+    content: |
+      [Match]
+      Name=podmanpriv
+
+      [Network]
+      DNS=10.89.0.1
+      Domains=~dns.podman
+      KeepConfiguration=yes
+    mode: "0644"
+  notify: Reload systemd-networkd
 - name: Create podman-auto-update.service.d directory
   ansible.builtin.file:
     path: /etc/systemd/system/podman-auto-update.service.d
@@ -85,3 +119,10 @@
         directory = *
     dest: /etc/gitconfig
     mode: '0644'
+- name: Resolve local domain to loopback in /etc/hosts
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    regexp: '\s{{ domain_name | regex_escape }}$'
+    line: '10.89.0.1 {{ domain_name }}'
+    state: present
+  when: domain_name.endswith('.local')

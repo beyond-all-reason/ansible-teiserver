@@ -23,6 +23,9 @@
 - name: Configure teiserver
   ansible.builtin.import_tasks: teiserver.yml
   tags: teiserver
+- name: Configure containers
+  ansible.builtin.import_tasks: containers.yml
+  tags: containers
 - name: Configure geoipupdates
   ansible.builtin.import_tasks: geoip.yml
   tags: geoip
