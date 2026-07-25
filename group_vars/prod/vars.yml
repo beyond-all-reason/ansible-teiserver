@@ -5,7 +5,7 @@ acme_server: https://acme-v02.api.letsencrypt.org/directory
 acme_agreement_url: https://letsencrypt.org/documents/LE-SA-v1.4-April-3-2024.pdf
 configure_zabbix_agent: true
 zabbix_psk: '{{ vault_zabbix_psk }}'
-zabbix_server: 192.3.148.174
+zabbix_server: 108.174.58.110
 configure_monitoring: true
 monitoring_write_instance_dev: false
 monitoring_metrics_write_password: "{{ vault_monitoring_metrics_write_password }}"
