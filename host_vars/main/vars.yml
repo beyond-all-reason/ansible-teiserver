@@ -4,6 +4,7 @@ database_password: '{{ vault_database_password }}'
 teiserver_setup_key: '{{ vault_teiserver_setup_key }}'
 teiserver_guardian_secret: '{{ vault_teiserver_guardian_secret }}'
 teiserver_secret_key_base: '{{ vault_teiserver_secret_key_base }}'
+teiserver_mfa_required: true
 
 backup_path: '{{ vault_backup_path }}'
 backup_rclone_config: '{{ vault_backup_rclone_config }}'
