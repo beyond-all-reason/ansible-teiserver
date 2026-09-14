@@ -89,6 +89,8 @@ To update the database on the integration server, you can use the same steps as 
 
 To avoid this issue, we will apply a patch on top of the restored database to update the `config_site` table with the values from the integration server.
 
+SPADS remembers the account it has registered with a server. Restoring the database from prod deletes the bot accounts for SPADS autohosts connected to integration, so we need to do a bit more cleanup for all autohosts connected to integration.
+
 ### Preparing `config_site` table patch
 
 On the integration server, dump the `config_site` table:
@@ -129,21 +131,40 @@ COMMIT;
 ### Updating the database
 
 0. Ensure you have `/home/deploy/update_config_site.sql` ready following the previous section.
-1. Stop the teiserver on the integration server
+1. Stop all SPADS autohosts connected to the integration server.
+
+   You can find them in the [ansible-spads-setup](https://github.com/beyond-all-reason/ansible-spads-setup) repo, by [searching for a `spads_lobbyHost` variable override](https://github.com/search?q=repo%3Abeyond-all-reason%2Fansible-spads-setup+%22spads_lobbyHost%3A%22&type=code) pointing at the integration server, for example [here](https://github.com/beyond-all-reason/ansible-spads-setup/blob/848ff3416d3a14bdfe30e2e313cf5f730499b875/host_vars/eu4/vars.yaml#L2) (that link is pinned to a commit, so it might be out of date).
+
+   On each of them, *not* on integration, run:
+
+   ```
+   sudo systemctl stop spads
+   ```
+2. Stop the teiserver on the integration server
 
    ```
    sudo systemctl stop teiserver
    ```
-2. Restore the database from the production server following one of the options from the [Backups](#backups) section.
-3. Apply the `config_site` path
+3. Restore the database from the production server following one of the options from the [Backups](#backups) section.
+4. Apply the `config_site` patch
 
    ```
    psql -d teiserver_prod -U teiserver_prod -f /home/deploy/update_config_site.sql
    ```
-4. Start the teiserver
+5. Start the teiserver
 
    ```
    sudo systemctl start teiserver
+   ```
+6. Remove `var/ClusterManager/existingAccounts.dat` from all the integration SPADS autohosts, so that they can re-register with the integration server.
+
+   ```
+   sudo rm /home/spads/spads/var/ClusterManager/existingAccounts.dat
+   ```
+7. Start all SPADS autohosts connected to the integration server.
+
+   ```
+   sudo systemctl start spads
    ```
 
 ## New host setup
