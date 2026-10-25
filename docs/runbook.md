@@ -89,6 +89,8 @@ To update the database on the integration server, you can use the same steps as 
 
 To avoid this issue, we will apply a patch on top of the restored database to update the `config_site` table with the values from the integration server.
 
+Similarly, OAuth bots and credentials used by services connecting to integration (e.g. autohost, maps-metadata) exist only on integration and need to be recreated.
+
 SPADS remembers the account it has registered with a server. Restoring the database from prod deletes the bot accounts for SPADS autohosts connected to integration, so we need to do a bit more cleanup for all autohosts connected to integration.
 
 ### Preparing `config_site` table patch
@@ -128,9 +130,15 @@ ON CONFLICT (key) DO UPDATE SET
 COMMIT;
 ```
 
+### Preparing OAuth applications and bots patch
+
+`/home/deploy/update_oauth_bots.sql` on the integration server recreates the `generic_lobby` and `integration_map_updater` OAuth applications, the `autohost-eu4` and `integration_map_pusher` bots, and their credentials with the existing client ids and secrets. `generic_lobby` is created only if it's not present in the production. Any other conflicting rows will fail.
+
+If bots or credentials on integration change, regenerate the script using the queries in its header comment.
+
 ### Updating the database
 
-0. Ensure you have `/home/deploy/update_config_site.sql` ready following the previous section.
+0. Ensure you have `/home/deploy/update_config_site.sql` and `/home/deploy/update_oauth_bots.sql` ready following the previous sections.
 1. Stop all SPADS autohosts connected to the integration server.
 
    You can find them in the [ansible-spads-setup](https://github.com/beyond-all-reason/ansible-spads-setup) repo, by [searching for a `spads_lobbyHost` variable override](https://github.com/search?q=repo%3Abeyond-all-reason%2Fansible-spads-setup+%22spads_lobbyHost%3A%22&type=code) pointing at the integration server, for example [here](https://github.com/beyond-all-reason/ansible-spads-setup/blob/848ff3416d3a14bdfe30e2e313cf5f730499b875/host_vars/eu4/vars.yaml#L2) (that link is pinned to a commit, so it might be out of date).
@@ -149,19 +157,24 @@ COMMIT;
 4. Apply the `config_site` patch
 
    ```
-   psql -d teiserver_prod -U teiserver_prod -f /home/deploy/update_config_site.sql
+   psql -d teiserver_prod -U teiserver_prod -v ON_ERROR_STOP=1 -f /home/deploy/update_config_site.sql
    ```
-5. Start the teiserver
+5. Apply the OAuth applications and bots patch
+
+   ```
+   psql -d teiserver_prod -U teiserver_prod -v ON_ERROR_STOP=1 -f /home/deploy/update_oauth_bots.sql
+   ```
+6. Start the teiserver
 
    ```
    sudo systemctl start teiserver
    ```
-6. Remove `var/ClusterManager/existingAccounts.dat` from all the integration SPADS autohosts, so that they can re-register with the integration server.
+7. Remove `var/ClusterManager/existingAccounts.dat` from all the integration SPADS autohosts, so that they can re-register with the integration server.
 
    ```
    sudo rm /home/spads/spads/var/ClusterManager/existingAccounts.dat
    ```
-7. Start all SPADS autohosts connected to the integration server.
+8. Start all SPADS autohosts connected to the integration server.
 
    ```
    sudo systemctl start spads
