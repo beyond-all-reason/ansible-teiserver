@@ -41,9 +41,6 @@
     name: teiserver
     shell: /sbin/nologin
     home: /var/lib/teiserver
-    groups:
-      - ssl-cert
-    append: true
 - name: Create teiserver installation directory
   ansible.builtin.file:
     path: /opt/teiserver

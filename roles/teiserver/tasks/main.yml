@@ -8,10 +8,6 @@
 - name: Set up http server
   ansible.builtin.import_tasks: http.yml
   tags: http
-- name: Get proper TLS certificate
-  ansible.builtin.import_tasks: tls.yml
-  when: acquire_tls_certificate
-  tags: tls
 - name: Configure database
   ansible.builtin.import_tasks: database.yml
   become_user: postgres

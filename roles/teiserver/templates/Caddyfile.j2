@@ -1,0 +1,45 @@
+# Caddy handles TLS certificates (ACME) and HTTP -> HTTPS redirects automatically.
+{
+{% if acquire_tls_certificate %}
+{% if acme_email %}
+	email {{ acme_email }}
+{% endif %}
+	acme_ca {{ acme_server }}
+{% endif %}
+}
+
+{{ domain_name }} {
+{% if not acquire_tls_certificate %}
+	tls internal
+{% endif %}
+
+	log {
+		output file /var/log/caddy/access.log
+	}
+
+	header {
+		Strict-Transport-Security "max-age=63072000"
+		X-Frame-Options DENY
+		-Server
+	}
+
+	handle /favicon.ico {
+		root * /var/www/teiserver
+		file_server
+	}
+
+	handle /dex/* {
+		# Resolved at runtime, not at startup.
+		reverse_proxy dex.dns.podman:5556 {
+			header_up X-Real-IP {remote_host}
+		}
+	}
+
+	handle {
+		reverse_proxy 127.0.0.1:4000 {
+			# Teiserver reads the client IP from X-Real-IP, so overwrite any
+			# value sent by the client.
+			header_up X-Real-IP {remote_host}
+		}
+	}
+}

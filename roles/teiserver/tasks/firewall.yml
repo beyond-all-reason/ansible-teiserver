@@ -3,10 +3,19 @@
   community.general.ufw:
     rule: limit
     name: OpenSSH
-- name: Allow HTTP
+- name: Set up Caddy application profile
+  ansible.builtin.copy:
+    content: |
+      [Caddy]
+      title=Caddy
+      description=HTTP, HTTPS and HTTP/3
+      ports=80,443/tcp|443/udp
+    dest: /etc/ufw/applications.d/caddy
+    mode: '0644'
+- name: Allow HTTP(S)
   community.general.ufw:
     rule: allow
-    name: WWW Full
+    name: Caddy
 - name: Set up teiserver application profile
   ansible.builtin.copy:
     content: |

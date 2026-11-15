@@ -5,12 +5,40 @@
 - name: Set hostname
   ansible.builtin.hostname:
     name: '{{ force_hostname | default("teiserver-" + inventory_hostname) }}'
+- name: Stop and disable services replaced by Caddy
+  ansible.builtin.systemd_service:
+    name: '{{ item }}'
+    state: stopped
+    enabled: false
+  loop:
+    - nginx.service
+    - acme.timer
+  failed_when: false  # units don't exist on fresh hosts
+- name: Remove nginx and acmetool replaced by Caddy
+  ansible.builtin.package:
+    name:
+      - nginx
+      - nginx-common
+      - acmetool
+    state: absent
+- name: Remove obsolete acmetool systemd units
+  ansible.builtin.file:
+    path: '/etc/systemd/system/{{ item }}'
+    state: absent
+  loop:
+    - acme.service
+    - acme.timer
+  register: acme_units_removed
+- name: Reload systemd after removing units
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+  when: acme_units_removed.changed
 - name: Install packages
   ansible.builtin.package:
     name:
       - acl  # for ansible become
-      - acmetool
       - build-essential
+      - caddy
       - curl
       - dnsutils
       - geoip-bin
@@ -22,13 +50,11 @@
       - lz4
       - man
       - nano
-      - nginx
       - podman
       - podman-docker
       - postgresql-17
       - python3-psycopg2  # for ansible postgresql
       - rclone  # for backups
-      - ssl-cert  # self-signed cert for testing
       - tcpdump
       - tmux
       - ufw

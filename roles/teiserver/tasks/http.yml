@@ -1,23 +1,4 @@
 ---
-- name: Check if certificate linked
-  ansible.builtin.stat:
-    path: /etc/ssl/private/teiserver.key
-  register: cert
-- name: Link self signed certificates
-  ansible.builtin.file:
-    src: '{{ item.from }}'
-    dest: '{{ item.to }}'
-    state: link
-  loop:
-    - from: /etc/ssl/certs/ssl-cert-snakeoil.pem
-      to: /etc/ssl/certs/teiserver.crt
-    - from: /etc/ssl/certs/ssl-cert-snakeoil.pem
-      to: /etc/ssl/certs/teiserver_full.crt
-    - from: /etc/ssl/private/ssl-cert-snakeoil.key
-      to: /etc/ssl/private/teiserver.key
-  # Only set if no certificate linked is linked at the moment to make sure the acme certificate will stick.
-  when: not cert.stat.exists
-
 - name: Create teiserver www root
   ansible.builtin.file:
     path: /var/www/teiserver
@@ -28,18 +9,24 @@
     src: favicon.ico
     dest: /var/www/teiserver/favicon.ico
     mode: '0644'
-- name: Copy dhparams
-  ansible.builtin.copy:
-    src: ffdhe2048.txt
-    dest: /etc/ssl/dhparam.pem
-    mode: '0644'
-- name: Write nginx config
+- name: Create Caddy log directory
+  ansible.builtin.file:
+    path: /var/log/caddy
+    owner: caddy
+    group: caddy
+    mode: '0755'
+    state: directory
+- name: Write Caddyfile
   ansible.builtin.template:
-    src: nginx.conf.j2
-    dest: /etc/nginx/nginx.conf
-  register: nginx_config
-- name: Reload nginx
-  ansible.builtin.systemd:
-    name: nginx.service
-    state: reloaded
-  when: nginx_config.changed
+    src: Caddyfile.j2
+    dest: /etc/caddy/Caddyfile
+    mode: '0644'
+    validate: caddy validate --adapter caddyfile --config %s
+  notify: Reload Caddy
+- name: Apply Caddy config now
+  ansible.builtin.meta: flush_handlers
+- name: Enable and start Caddy
+  ansible.builtin.systemd_service:
+    name: caddy.service
+    enabled: true
+    state: started
