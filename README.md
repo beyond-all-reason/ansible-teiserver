@@ -12,10 +12,12 @@ If you are trying to set up and test things locally and you don't have access to
 
 #### Dependencies
 
+Ansible is managed via [uv](https://docs.astral.sh/uv/). Make sure you have `uv` installed and prefix Ansible commands with `uv run`.
+
 Make sure required collections are installed by running:
 
 ```
-ansible-galaxy collection install -r requirements.yml
+uv run sync-collections
 ```
 
 If you pull repo and there are changes to that file, you need to rerun the command to make sure you pick up latest changes.
@@ -31,7 +33,7 @@ For running the playbook against the prod instances, you will need the vault pas
 Currently there is only one playbook that sets up the whole server. You can run it against the `main` instance to check if everything is up to date with:
 
 ```
-ansible-playbook -l main play.yml --check --diff
+uv run ansible-playbook -l main play.yml --check --diff
 ```
 
 Then drop the `--check` flag to actually apply the changes.
@@ -41,13 +43,13 @@ Then drop the `--check` flag to actually apply the changes.
 It's possible to run only selected part of the playbook with the usage of tags. You can fetch the list of tags with:
 
 ```
-ansible-playbook play.yml --list-tags
+uv run ansible-playbook play.yml --list-tags
 ```
 
 and then run only selected part with:
 
 ```
-ansible-playbook -l main play.yml --tags database,teiserver
+uv run ansible-playbook -l main play.yml --tags database,teiserver
 ```
 
 ### Server usage
@@ -117,7 +119,7 @@ incus exec teiserver-test -- cloud-init status --wait
 Then test that it works for ansible:
 
 ```
-ansible dev -m shell -a 'uname -a'
+uv run ansible dev -m shell -a 'uname -a'
 ```
 
 ### Usage
@@ -125,13 +127,13 @@ ansible dev -m shell -a 'uname -a'
 Now you can use all the playbooks and roles as usual, just make sure you are targeting the `dev` inventory group or `test` host. For example:
 
 ```
-ansible-playbook -l dev play.yml
+uv run ansible-playbook -l dev play.yml
 ```
 
 You can ssh into it with something like:
 
 ```
-ssh -i test.ssh.key ansible@$(ansible-inventory --host test | jq -r '.ansible_host')
+ssh -i test.ssh.key ansible@$(uv run ansible-inventory --host test | jq -r '.ansible_host')
 ```
 
 Or enter directly into root container shell with:
@@ -189,7 +191,7 @@ To configure sending metrics to local monitoring host set up with [ansible-monit
 
 ```
 MON_HOST_IP=$(incus list -f csv -c 4 bar-mon-test | grep -E 'eth|enp' | cut -d' ' -f1)
-ansible-playbook -l test play.yml --diff -t monitoring \
+uv run ansible-playbook -l test play.yml --diff -t monitoring \
   -e "{ configure_monitoring: true, monitoring_metrics_write_host_ip: $MON_HOST_IP }"
 ```
 

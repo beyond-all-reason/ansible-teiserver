@@ -3,7 +3,7 @@
   ansible.builtin.service_facts:
 - name: Set teiserver running fact
   ansible.builtin.set_fact:
-    teiserver_running: '{{ "teiserver.service" in services and services["teiserver.service"]["state"] == "running" }}'
+    teiserver_running: '{{ "teiserver.service" in ansible_facts["services"] and ansible_facts["services"]["teiserver.service"]["state"] == "running" }}'
 - name: Create postgres database
   community.postgresql.postgresql_db:
     name: '{{ database_name }}'
@@ -16,7 +16,7 @@
 - name: Grant privileges
   community.postgresql.postgresql_privs:
     type: database
-    database: '{{ database_name }}'
+    login_db: '{{ database_name }}'
     roles: '{{ database_user }}'
     privs: ALL
 - name: Custom HBA rules
@@ -30,8 +30,8 @@
 - name: Enable pg_stat_statements module
   # We have to do this one first, because without it the pg_stat_statements.track
   # setting will not be available in the next step.
-  community.postgresql.postgresql_set:
-    name: shared_preload_libraries
+  community.postgresql.postgresql_alter_system:
+    param: shared_preload_libraries
     value: pg_stat_statements
   register: pg_shared_preload_libraries
 - name: Restart postgresql
@@ -41,15 +41,15 @@
   when: pg_shared_preload_libraries.changed and not teiserver_running
   become_user: root
 - name: Tune Postgresql configuration
-  community.postgresql.postgresql_set:
-    name: '{{ item.name }}'
+  community.postgresql.postgresql_alter_system:
+    param: '{{ item.param }}'
     value: '{{ item.value }}'
   loop:
-    - name: track_activity_query_size
-      value: '2kB'  # For some reason 2048 showed constantly as diff in ansible module
-    - name: pg_stat_statements.track
+    - param: track_activity_query_size
+      value: '2kB'
+    - param: pg_stat_statements.track
       value: 'all'
-    - name: log_min_duration_statement
+    - param: log_min_duration_statement
       value: '5s'
   register: pstune
 - name: Restart postgresql
@@ -65,4 +65,4 @@
 - name: Enabled pg_stat_statements extension
   community.postgresql.postgresql_ext:
     name: pg_stat_statements
-    db: '{{ database_name }}'
+    login_db: '{{ database_name }}'

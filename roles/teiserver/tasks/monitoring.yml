@@ -19,4 +19,4 @@
                 - dex.dns.podman:5558
           relabel_configs:
             - target_label: instance
-              replacement: "{{ ansible_hostname }}"
+              replacement: "{{ ansible_facts['hostname'] }}"
